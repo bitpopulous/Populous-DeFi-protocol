@@ -30,4 +30,5 @@ PXT is the reward token of the Populous DeFi platform. The token is distributed 
 
 PXT is the governance token for the PopDeFi. Wth PXT you are able to participate in voting on key aspects of the PopDeFi such as rates and new strategies which will come into play. PXT also can command income driven from internal fees generated on both the PopDeFi and PIP. PXT can also be state on the PopEx in return for ETH generated from the Populous mining operations.
 
-## Lending and borrowing -- pending
+## Lending and borrowing
+Deposit and provide liquidity to the market to earn a passive income. Borrowers are able to borrow at a LTV rate of between 50% to 75% of crypto assets owned.
