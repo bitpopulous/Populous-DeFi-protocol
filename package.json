@@ -1,0 +1,54 @@
+{
+  "name": "populous_world_deFi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "null",
+  "scripts": {
+    "test": "npx truffle test",
+    "test-cov": "export RUNNING_COVERAGE=True && truffle run coverage --network=development",
+    "test-mainnet-only": "truffle build && export MAINNET_FORK=True && npx truffle test ./test/mainnet-fork-test-basic.js ./test/mainnet-fork-test-curve-dai.js ./test/mainnet-fork-test-curve-usdc.js ./test/mainnet-fork-test-curve-usdt.js ./test/mainnet-fork-test-snxReward.js",
+    "test-mainnet-e2e": "truffle build && export MAINNET_E2E=True && npx truffle test ./test/mainnet-e2e.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bitpopulous/DeFi.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bitpopulous/DeFi/issues"
+  },
+  "comments": {
+    "dependencies": "dependencies are Packages required by your application in production.",
+    "devDependencies": {
+      "devDependencies": "Packages that are only needed for local development and testing.",
+      "openzeppelin contracts": "@openzeppelin/contracts ^2.5.0 OR openzeppelin-solidity ^2.3.0"
+    }
+  },
+  "devDependencies": {
+    "openzeppelin-test-helpers": "^0.4.0",
+    "@studydefi/money-legos": "^2.3.7",
+    "@truffle/hdwallet-provider": "1.0.42",
+    "dotenv": "^8.2.0",
+    "ganache-cli": "^6.10.1",
+    "prettier": "^2.0.5",
+    "solidity-coverage": "0.7.0",
+    "truffle-wallet-provider": "0.0.5",
+    "chai": "^4.2.0",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
+    "eslint-plugin-prettier": "^3.1.0",
+    "eslint-plugin-react": "^7.13.0",
+    "eslint-plugin-security": "^1.4.0",
+    "prettier-plugin-solidity": "^1.0.0-alpha.22",
+    "solhint": "^2.1.0"
+  },
+  "homepage": "https://github.com/bitpopulous/DeFi",
+  "dependencies": {
+    "@openzeppelin/contracts": "^2.5.0",
+    "truffle": "^5.0.21"
+  }
+}
