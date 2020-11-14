@@ -1,5 +1,5 @@
-const ADai = artifacts.require('ADai');
-const AUSDC = artifacts.require('AUSDC');
+const PDai = artifacts.require('PDai');
+const PUSDC = artifacts.require('PUSDC');
 const Dai = artifacts.require('Dai');
 const USDC = artifacts.require('USDC');
 const LendingPoolAddressesProvider = artifacts.require('LendingPoolAddressesProvider');
@@ -15,7 +15,7 @@ module.exports = function(deployer, network, accounts) {
         // Do something specific to the network named "development".
         let underlyingAsset, addressesProvider;
         /* 
-        Note: constructor variables for aTokens
+        Note: constructor variables for PTokens
         LendingPoolAddressesProvider _addressesProvider,
         address _underlyingAsset,
         uint8 _underlyingAssetDecimals,
@@ -31,8 +31,8 @@ module.exports = function(deployer, network, accounts) {
             })
             .then(function(instance) {
                 underlyingAsset = instance;
-                //add deployed Dai instance to aDai
-                return deployer.deploy(ADai, addressesProvider.address, underlyingAsset.address, 18, 'aDai', 'aDai', {gas: 6721975, from: root});
+                //add deployed Dai instance to PDai
+                return deployer.deploy(PDai, addressesProvider.address, underlyingAsset.address, 18, 'PDai', 'PDai', {gas: 6721975, from: root});
             });
         });
 
@@ -47,12 +47,12 @@ module.exports = function(deployer, network, accounts) {
             })
             .then(function(instance) {
                 underlyingAsset = instance;
-                //add deployed Dai instance to aDai
-                return deployer.deploy(AUSDC, addressesProvider.address, underlyingAsset.address, 6, 'aUSDC', 'aUSDC', {gas: 6721975, from: root});
+                //add deployed Dai instance to PDai
+                return deployer.deploy(PUSDC, addressesProvider.address, underlyingAsset.address, 6, 'PUSDC', 'PUSDC', {gas: 6721975, from: root});
             });
         });
 
     } else {
         // Perform a different step otherwise.
     }
-}
+};

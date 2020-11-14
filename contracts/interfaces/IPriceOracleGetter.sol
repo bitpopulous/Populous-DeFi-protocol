@@ -6,9 +6,9 @@ pragma solidity ^0.5.0;
 /**
 * IPriceOracle interface
 * -
-* Interface for the Aave price oracle.
+* Interface for the Populous price oracle.
 * -
-* This contract was cloned from aave and modified to work with the Populous World eco-system.
+* This contract was cloned from Populous and modified to work with the Populous World eco-system.
 **/
 
 interface IPriceOracleGetter {

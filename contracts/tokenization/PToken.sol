@@ -14,10 +14,10 @@ import "../libraries/WadRayMath.sol";
  * -
  * Implementation of the interest bearing token for the DLP protocol.
  * -
- * This contract was cloned from aave and modified to work with the Populous World eco-system.
+ * This contract was cloned from Populous and modified to work with the Populous World eco-system.
  **/
 
-contract AToken is ERC20, ERC20Detailed {
+contract PToken is ERC20, ERC20Detailed {
     using WadRayMath for uint256;
 
     uint256 public constant UINT_MAX_VALUE = uint256(-1);
@@ -217,7 +217,7 @@ contract AToken is ERC20, ERC20Detailed {
     }
 
     /**
-     * @dev redeems aToken for the underlying asset
+     * @dev redeems PToken for the underlying asset
      * @param _amount the amount being redeemed
      **/
     function redeem(uint256 _amount) external {
@@ -317,7 +317,7 @@ contract AToken is ERC20, ERC20Detailed {
      * @dev burns token in the event of a borrow being liquidated, in case the liquidators reclaims the underlying asset
      * Transfer of the liquidated asset is executed by the lending pool contract.
      * only lending pools can call this function
-     * @param _account the address from which burn the aTokens
+     * @param _account the address from which burn the PTokens
      * @param _value the amount to burn
      **/
     function burnOnLiquidation(address _account, uint256 _value)
@@ -358,9 +358,9 @@ contract AToken is ERC20, ERC20Detailed {
     }
 
     /**
-     * @dev transfers tokens in the event of a borrow being liquidated, in case the liquidators reclaims the aToken
+     * @dev transfers tokens in the event of a borrow being liquidated, in case the liquidators reclaims the PToken
      *      only lending pools can call this function
-     * @param _from the address from which transfer the aTokens
+     * @param _from the address from which transfer the PTokens
      * @param _to the destination address
      * @param _value the amount to transfer
      **/
@@ -424,7 +424,7 @@ contract AToken is ERC20, ERC20Detailed {
     }
 
     /**
-     * @dev calculates the total supply of the specific aToken
+     * @dev calculates the total supply of the specific PToken
      * since the balance of every single user increases over time, the total supply
      * does that too.
      * @return the current total supply
@@ -601,9 +601,9 @@ contract AToken is ERC20, ERC20Detailed {
     }
 
     /**
-     * @dev executes the transfer of aTokens, invoked by both _transfer() and
+     * @dev executes the transfer of PTokens, invoked by both _transfer() and
      *      transferOnLiquidation()
-     * @param _from the address from which transfer the aTokens
+     * @param _from the address from which transfer the PTokens
      * @param _to the destination address
      * @param _value the amount to transfer
      **/
@@ -671,7 +671,7 @@ contract AToken is ERC20, ERC20Detailed {
     /**
      * @dev executes the redirection of the interest from one address to another.
      * immediately after redirection, the destination address will start to accrue interest.
-     * @param _from the address from which transfer the aTokens
+     * @param _from the address from which transfer the PTokens
      * @param _to the destination address
      **/
     function redirectInterestStreamInternal(address _from, address _to)

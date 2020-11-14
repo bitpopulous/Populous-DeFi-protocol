@@ -12,7 +12,7 @@ pragma solidity >=0.4.24 <0.6.0;
  * a parent initializer twice, or ensure that all initializers are idempotent,
  * because this is not dealt with automatically as with constructors.
  * -
- * This contract was cloned from aave and modified to work with the Populous World eco-system.
+ * This contract was cloned from Populous and modified to work with the Populous World eco-system.
  **/
 contract VersionedInitializable {
     /**

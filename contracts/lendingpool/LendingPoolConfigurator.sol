@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
 import "../libraries/openzeppelin-upgradeability/VersionedInitializable.sol";
 import "../configuration/LendingPoolAddressesProvider.sol";
 import "./LendingPoolCore.sol";
-import "../tokenization/AToken.sol";
+import "../tokenization/PToken.sol";
 
 /**
  * LendingPoolConfigurator contract
@@ -13,7 +13,7 @@ import "../tokenization/AToken.sol";
  * Executes configuration methods on the LendingPoolCore contract. Allows to enable/disable reserves,
  * and set different protocol parameters.
  * -
- * This contract was cloned from aave and modified to work with the Populous World eco-system.
+ * This contract was cloned from Populous and modified to work with the Populous World eco-system.
  **/
 
 contract LendingPoolConfigurator is VersionedInitializable {
@@ -22,12 +22,12 @@ contract LendingPoolConfigurator is VersionedInitializable {
     /**
      * @dev emitted when a reserve is initialized.
      * @param _reserve the address of the reserve
-     * @param _aToken the address of the overlying aToken contract
+     * @param _PToken the address of the overlying PToken contract
      * @param _interestRateStrategyAddress the address of the interest rate strategy for the reserve
      **/
     event ReserveInitialized(
         address indexed _reserve,
-        address indexed _aToken,
+        address indexed _PToken,
         address _interestRateStrategyAddress
     );
 
@@ -185,34 +185,34 @@ contract LendingPoolConfigurator is VersionedInitializable {
     ) external onlyLendingPoolManager {
         ERC20Detailed asset = ERC20Detailed(_reserve);
 
-        string memory aTokenName = string(
-            abi.encodePacked("Aave Interest bearing ", asset.name())
+        string memory PTokenName = string(
+            abi.encodePacked("Populous Interest bearing ", asset.name())
         );
-        string memory aTokenSymbol = string(
+        string memory PTokenSymbol = string(
             abi.encodePacked("a", asset.symbol())
         );
 
         initReserveWithData(
             _reserve,
-            aTokenName,
-            aTokenSymbol,
+            PTokenName,
+            PTokenSymbol,
             _underlyingAssetDecimals,
             _interestRateStrategyAddress
         );
     }
 
     /**
-     * @dev initializes a reserve using aTokenData provided externally (useful if the underlying ERC20 contract doesn't expose name or decimals)
+     * @dev initializes a reserve using PTokenData provided externally (useful if the underlying ERC20 contract doesn't expose name or decimals)
      * @param _reserve the address of the reserve to be initialized
-     * @param _aTokenName the name of the aToken contract
-     * @param _aTokenSymbol the symbol of the aToken contract
+     * @param _PTokenName the name of the PToken contract
+     * @param _PTokenSymbol the symbol of the PToken contract
      * @param _underlyingAssetDecimals the decimals of the reserve underlying asset
      * @param _interestRateStrategyAddress the address of the interest rate strategy contract for this reserve
      **/
     function initReserveWithData(
         address _reserve,
-        string memory _aTokenName,
-        string memory _aTokenSymbol,
+        string memory _PTokenName,
+        string memory _PTokenSymbol,
         uint8 _underlyingAssetDecimals,
         address _interestRateStrategyAddress
     ) public onlyLendingPoolManager {
@@ -220,23 +220,23 @@ contract LendingPoolConfigurator is VersionedInitializable {
             poolAddressesProvider.getLendingPoolCore()
         );
 
-        AToken aTokenInstance = new AToken(
+        PToken PTokenInstance = new PToken(
             poolAddressesProvider,
             _reserve,
             _underlyingAssetDecimals,
-            _aTokenName,
-            _aTokenSymbol
+            _PTokenName,
+            _PTokenSymbol
         );
         core.initReserve(
             _reserve,
-            address(aTokenInstance),
+            address(PTokenInstance),
             _underlyingAssetDecimals,
             _interestRateStrategyAddress
         );
 
         emit ReserveInitialized(
             _reserve,
-            address(aTokenInstance),
+            address(PTokenInstance),
             _interestRateStrategyAddress
         );
     }

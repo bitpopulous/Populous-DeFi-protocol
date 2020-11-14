@@ -11,10 +11,10 @@ import "../libraries/EthAddressLib.sol";
  * WalletBalanceProvider contract
  * -
  * Implements a logic of getting multiple tokens balance for one user address
- * NOTE: THIS CONTRACT IS NOT USED WITHIN THE AAVE PROTOCOL. It's an accessory contract used to reduce the number of calls
- * towards the blockchain from the Aave backend.
+ * NOTE: THIS CONTRACT IS NOT USED WITHIN THE Populous PROTOCOL. It's an accessory contract used to reduce the number of calls
+ * towards the blockchain from the Populous backend.
  * -
- * This contract was cloned from aave and modified to work with the Populous World eco-system.
+ * This contract was cloned from Populous and modified to work with the Populous World eco-system.
  **/
 
 contract WalletBalanceProvider {

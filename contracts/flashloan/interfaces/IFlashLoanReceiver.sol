@@ -5,7 +5,7 @@ pragma solidity ^0.5.0;
 * -
 * implement this interface to develop a flashloan-compatible flashLoanReceiver contract
 * -
-* This contract was cloned from aave and modified to work with the Populous World eco-system.
+* This contract was cloned from Populous and modified to work with the Populous World eco-system.
 **/
 
 interface IFlashLoanReceiver {

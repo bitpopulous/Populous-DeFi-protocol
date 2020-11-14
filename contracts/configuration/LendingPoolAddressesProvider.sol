@@ -12,7 +12,7 @@ import "../interfaces/ILendingPoolAddressesProvider.sol";
 * Is the main registry of the protocol. All the different components of the protocol are accessible
 * through the addresses provider.
 * -
-* This contract was cloned from aave and modified to work with the Populous World eco-system.
+* This contract was cloned from Populous and modified to work with the Populous World eco-system.
 **/
 
 /**

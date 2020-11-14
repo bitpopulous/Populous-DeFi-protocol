@@ -8,7 +8,7 @@ import "./WadRayMath.sol";
  * -
  * Defines the data structures of the reserves and the user data
  * -
- * This contract was cloned from aave and modified to work with the Populous World eco-system.
+ * This contract was cloned from Populous and modified to work with the Populous World eco-system.
  **/
 
 library CoreLibrary {
@@ -62,9 +62,9 @@ library CoreLibrary {
         //the decimals of the reserve asset
         uint256 decimals;
         /**
-         * @dev address of the aToken representing the asset
+         * @dev address of the PToken representing the asset
          **/
-        address aTokenAddress;
+        address PTokenAddress;
         /**
          * @dev address of the interest rate strategy contract
          **/
@@ -163,18 +163,18 @@ library CoreLibrary {
     /**
      * @dev initializes a reserve
      * @param _self the reserve object
-     * @param _aTokenAddress the address of the overlying atoken contract
+     * @param _PTokenAddress the address of the overlying PToken contract
      * @param _decimals the number of decimals of the underlying asset
      * @param _interestRateStrategyAddress the address of the interest rate strategy contract
      **/
     function init(
         ReserveData storage _self,
-        address _aTokenAddress,
+        address _PTokenAddress,
         uint256 _decimals,
         address _interestRateStrategyAddress
     ) external {
         require(
-            _self.aTokenAddress == address(0),
+            _self.PTokenAddress == address(0),
             "Reserve has already been initialized"
         );
 
@@ -187,7 +187,7 @@ library CoreLibrary {
             _self.lastVariableBorrowCumulativeIndex = WadRayMath.ray();
         }
 
-        _self.aTokenAddress = _aTokenAddress;
+        _self.PTokenAddress = _PTokenAddress;
         _self.decimals = _decimals;
 
         _self.interestRateStrategyAddress = _interestRateStrategyAddress;

@@ -9,7 +9,7 @@ import "../libraries/WadRayMath.sol";
 * -
 * Implements calculation for the fees applied by the protocol
 * -
-* This contract was cloned from aave and modified to work with the Populous World eco-system.
+* This contract was cloned from Populous and modified to work with the Populous World eco-system.
 **/
 
 contract FeeProvider is IFeeProvider, VersionedInitializable {
@@ -38,7 +38,7 @@ contract FeeProvider is IFeeProvider, VersionedInitializable {
     /**
     * @dev calculates the origination fee for every loan executed on the platform.
     * @param _user can be used in the future to apply discount to the origination fee based on the
-    * _user account (eg. stake AAVE tokens in the lending pool, or deposit > 1M USD etc.)
+    * _user account (eg. stake Populous tokens in the lending pool, or deposit > 1M USD etc.)
     * @param _amount the amount of the loan
     **/
     function calculateLoanOriginationFee(address _user, uint256 _amount) external view returns (uint256) {

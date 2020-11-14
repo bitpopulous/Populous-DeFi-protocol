@@ -8,7 +8,7 @@ import "../libraries/openzeppelin-upgradeability/VersionedInitializable.sol";
 
 import "../configuration/LendingPoolAddressesProvider.sol";
 import "../configuration/LendingPoolParametersProvider.sol";
-import "../tokenization/AToken.sol";
+import "../tokenization/PToken.sol";
 import "../libraries/CoreLibrary.sol";
 import "../libraries/WadRayMath.sol";
 import "../interfaces/IFeeProvider.sol";
@@ -24,7 +24,7 @@ import "../libraries/EthAddressLib.sol";
 * -
 * Implements the actions of the LendingPool, and exposes accessory methods to fetch the users and reserve data
 * -
-* This contract was cloned from aave and modified to work with the Populous World eco-system.
+* This contract was cloned from Populous and modified to work with the Populous World eco-system.
 **/
 
 contract LendingPool is ReentrancyGuard, VersionedInitializable {
@@ -212,7 +212,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     * @param _liquidatedCollateralAmount the amount of collateral being liquidated
     * @param _accruedBorrowInterest the amount of interest accrued by the borrower since the last action
     * @param _liquidator the address of the liquidator
-    * @param _receiveAToken true if the liquidator wants to receive aTokens, false otherwise
+    * @param _receivePToken true if the liquidator wants to receive PTokens, false otherwise
     * @param _timestamp the timestamp of the action
     **/
     event LiquidationCall(
@@ -223,19 +223,19 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         uint256 _liquidatedCollateralAmount,
         uint256 _accruedBorrowInterest,
         address _liquidator,
-        bool _receiveAToken,
+        bool _receivePToken,
         uint256 _timestamp
     );
 
     /**
     * @dev functions affected by this modifier can only be invoked by the
-    * aToken.sol contract
+    * PToken.sol contract
     * @param _reserve the address of the reserve
     **/
-    modifier onlyOverlyingAToken(address _reserve) {
+    modifier onlyOverlyingPToken(address _reserve) {
         require(
-            msg.sender == core.getReserveATokenAddress(_reserve),
-            "The caller of this function can only be the aToken contract of this reserve"
+            msg.sender == core.getReservePTokenAddress(_reserve),
+            "The caller of this function can only be the PToken contract of this reserve"
         );
         _;
     }
@@ -293,7 +293,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     }
 
     /**
-    * @dev deposits The underlying asset into the reserve. A corresponding amount of the overlying asset (aTokens)
+    * @dev deposits The underlying asset into the reserve. A corresponding amount of the overlying asset (PTokens)
     * is minted.
     * @param _reserve the address of the reserve
     * @param _amount the amount to be deposited
@@ -307,17 +307,17 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         onlyUnfreezedReserve(_reserve)
         onlyAmountGreaterThanZero(_amount)
     {
-        AToken aToken = AToken(core.getReserveATokenAddress(_reserve));
+        PToken PToken = PToken(core.getReservePTokenAddress(_reserve));
 
-        bool isFirstDeposit = aToken.balanceOf(msg.sender) == 0;
+        bool isFirstDeposit = PToken.balanceOf(msg.sender) == 0;
 
         core.updateStateOnDeposit(_reserve, msg.sender, _amount, isFirstDeposit);
 
-        //minting AToken to user 1:1 with the specific exchange rate
-        aToken.mintOnDeposit(msg.sender, _amount);
+        //minting PToken to user 1:1 with the specific exchange rate
+        PToken.mintOnDeposit(msg.sender, _amount);
 
         //transfer to the core contract
-        core.transferToReserve.value(msg.value)(_reserve, msg.sender, _amount);
+        //core.transferToReserve.value(msg.value)(_reserve, msg.sender, _amount);
 
         //solium-disable-next-line
         emit Deposit(_reserve, msg.sender, _amount, _referralCode, block.timestamp);
@@ -326,7 +326,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     /**
     * @dev Redeems the underlying amount of assets requested by _user.
-    * This function is executed by the overlying aToken contract in response to a redeem action.
+    * This function is executed by the overlying PToken contract in response to a redeem action.
     * @param _reserve the address of the reserve
     * @param _user the address of the user performing the action
     * @param _amount the underlying amount to be redeemed
@@ -335,11 +335,11 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         address _reserve,
         address payable _user,
         uint256 _amount,
-        uint256 _aTokenBalanceAfterRedeem
+        uint256 _PTokenBalanceAfterRedeem
     )
         external
         nonReentrant
-        onlyOverlyingAToken(_reserve)
+        onlyOverlyingPToken(_reserve)
         onlyActiveReserve(_reserve)
         onlyAmountGreaterThanZero(_amount)
     {
@@ -349,7 +349,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             "There is not enough liquidity available to redeem"
         );
 
-        core.updateStateOnRedeem(_reserve, _user, _amount, _aTokenBalanceAfterRedeem == 0);
+        core.updateStateOnRedeem(_reserve, _user, _amount, _PTokenBalanceAfterRedeem == 0);
 
         core.transferToUser(_reserve, _user, _amount);
 
@@ -704,7 +704,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     /**
     * @dev rebalances the stable interest rate of a user if current liquidity rate > user stable rate.
-    * this is regulated by Aave to ensure that the protocol is not abused, and the user is paying a fair
+    * this is regulated by Populous to ensure that the protocol is not abused, and the user is paying a fair
     * rate. Anyone can call this function though.
     * @param _reserve the address of the reserve
     * @param _user the address of the user to be rebalanced
@@ -802,7 +802,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     * @param _reserve the address of the principal reserve
     * @param _user the address of the borrower
     * @param _purchaseAmount the amount of principal that the liquidator wants to repay
-    * @param _receiveAToken true if the liquidators wants to receive the aTokens, false if
+    * @param _receivePToken true if the liquidators wants to receive the PTokens, false if
     * he wants to receive the underlying asset directly
     **/
     function liquidationCall(
@@ -810,7 +810,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         address _reserve,
         address _user,
         uint256 _purchaseAmount,
-        bool _receiveAToken
+        bool _receivePToken
     ) external payable nonReentrant onlyActiveReserve(_reserve) onlyActiveReserve(_collateral) {
         address liquidationManager = addressesProvider.getLendingPoolLiquidationManager();
 
@@ -822,7 +822,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
                 _reserve,
                 _user,
                 _purchaseAmount,
-                _receiveAToken
+                _receivePToken
             )
         );
         require(success, "Liquidation call failed");
@@ -940,7 +940,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             uint256 utilizationRate,
             uint256 liquidityIndex,
             uint256 variableBorrowIndex,
-            address aTokenAddress,
+            address PTokenAddress,
             uint40 lastUpdateTimestamp
         )
     {
@@ -968,7 +968,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         external
         view
         returns (
-            uint256 currentATokenBalance,
+            uint256 currentPTokenBalance,
             uint256 currentBorrowBalance,
             uint256 principalBorrowBalance,
             uint256 borrowRateMode,

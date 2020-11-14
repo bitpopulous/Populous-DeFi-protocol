@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
  * -
  *  Provides mul and div function for wads (decimal numbers with 18 digits precision) and rays (decimals with 27 digits)
  * -
- * This contract was cloned from aave and modified to work with the Populous World eco-system.
+ * This contract was cloned from Populous and modified to work with the Populous World eco-system.
  **/
 
 library WadRayMath {

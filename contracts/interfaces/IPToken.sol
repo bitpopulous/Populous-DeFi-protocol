@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 //note create a proper PToken interface
 
-interface IAToken {
+interface IPToken {
     event Redeem(
         address indexed _from,
         uint256 _value,

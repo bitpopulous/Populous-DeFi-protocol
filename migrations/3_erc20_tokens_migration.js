@@ -12,5 +12,5 @@ module.exports = function(deployer, network, accounts) {
     } else {
         // Perform a different step otherwise.
     }
-}
+};
 

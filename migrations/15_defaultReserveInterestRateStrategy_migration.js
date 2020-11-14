@@ -47,7 +47,7 @@ module.exports = function (deployer, network, accounts) {
             })
             .then(function(instance) {
                 _reserve = instance;
-                //add deployed Dai instance to aDai
+                //add deployed Dai instance to PDai
                 return deployer.deploy(DefaultReserveInterestRateStrategy, _reserve.address, _lendingPoolAddressesProvider.address, _baseVariableBorrowRate, _variableRateSlope1, _variableRateSlope2, _stableRateSlope1, _stableRateSlope2, {gas: 6721975, from: root});
             });
         });
@@ -55,4 +55,4 @@ module.exports = function (deployer, network, accounts) {
     } else {
         // Perform a different step otherwise.
     }
-}
+} ;

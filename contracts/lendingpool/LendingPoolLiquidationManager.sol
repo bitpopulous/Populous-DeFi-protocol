@@ -8,7 +8,7 @@ import "../libraries/openzeppelin-upgradeability/VersionedInitializable.sol";
 
 import "../configuration/LendingPoolAddressesProvider.sol";
 import "../configuration/LendingPoolParametersProvider.sol";
-import "../tokenization/AToken.sol";
+import "../tokenization/PToken.sol";
 import "../libraries/CoreLibrary.sol";
 import "../libraries/WadRayMath.sol";
 import "./LendingPoolCore.sol";
@@ -20,7 +20,7 @@ import "../interfaces/IPriceOracleGetter.sol";
  * -
  *Implements the liquidation function.
  * -
- * This contract was cloned from aave and modified to work with the Populous World eco-system.
+ * This contract was cloned from Populous and modified to work with the Populous World eco-system.
  **/
 contract LendingPoolLiquidationManager is
     ReentrancyGuard,
@@ -66,7 +66,7 @@ contract LendingPoolLiquidationManager is
      * @param _liquidatedCollateralAmount the amount of collateral being liquidated
      * @param _accruedBorrowInterest the amount of interest accrued by the borrower since the last action
      * @param _liquidator the address of the liquidator
-     * @param _receiveAToken true if the liquidator wants to receive aTokens, false otherwise
+     * @param _receivePToken true if the liquidator wants to receive PTokens, false otherwise
      * @param _timestamp the timestamp of the action
      **/
     event LiquidationCall(
@@ -77,7 +77,7 @@ contract LendingPoolLiquidationManager is
         uint256 _liquidatedCollateralAmount,
         uint256 _accruedBorrowInterest,
         address _liquidator,
-        bool _receiveAToken,
+        bool _receivePToken,
         uint256 _timestamp
     );
 
@@ -123,7 +123,7 @@ contract LendingPoolLiquidationManager is
      * @param _reserve the address of the principal reserve
      * @param _user the address of the borrower
      * @param _purchaseAmount the amount of principal that the liquidator wants to repay
-     * @param _receiveAToken true if the liquidators wants to receive the aTokens, false if
+     * @param _receivePToken true if the liquidators wants to receive the PTokens, false if
      * he wants to receive the underlying asset directly
      **/
     function liquidationCall(
@@ -131,7 +131,7 @@ contract LendingPoolLiquidationManager is
         address _reserve,
         address _user,
         uint256 _purchaseAmount,
-        bool _receiveAToken
+        bool _receivePToken
     ) external payable returns (uint256, string memory) {
         // Usage of a memory struct of vars to avoid "Stack too deep" errors due to local variables
         LiquidationCallLocalVars memory vars;
@@ -227,7 +227,7 @@ contract LendingPoolLiquidationManager is
         }
 
         //if liquidator reclaims the underlying asset, we make sure there is enough available collateral in the reserve
-        if (!_receiveAToken) {
+        if (!_receivePToken) {
             uint256 currentAvailableCollateral = core
                 .getReserveAvailableLiquidity(_collateral);
             if (currentAvailableCollateral < maxCollateralToLiquidate) {
@@ -247,24 +247,24 @@ contract LendingPoolLiquidationManager is
             vars.feeLiquidated,
             vars.liquidatedCollateralForFee,
             vars.borrowBalanceIncrease,
-            _receiveAToken
+            _receivePToken
         );
 
-        AToken collateralAtoken = AToken(
-            core.getReserveATokenAddress(_collateral)
+        PToken collateralPToken = PToken(
+            core.getReservePTokenAddress(_collateral)
         );
 
-        //if liquidator reclaims the aToken, he receives the equivalent atoken amount
-        if (_receiveAToken) {
-            collateralAtoken.transferOnLiquidation(
+        //if liquidator reclaims the PToken, he receives the equivalent PToken amount
+        if (_receivePToken) {
+            collateralPToken.transferOnLiquidation(
                 _user,
                 msg.sender,
                 maxCollateralToLiquidate
             );
         } else {
             //otherwise receives the underlying asset
-            //burn the equivalent amount of atoken
-            collateralAtoken.burnOnLiquidation(_user, maxCollateralToLiquidate);
+            //burn the equivalent amount of PToken
+            collateralPToken.burnOnLiquidation(_user, maxCollateralToLiquidate);
             core.transferToUser(
                 _collateral,
                 msg.sender,
@@ -281,8 +281,8 @@ contract LendingPoolLiquidationManager is
 
         if (vars.feeLiquidated > 0) {
             //if there is enough collateral to liquidate the fee, first transfer burn an equivalent amount of
-            //aTokens of the user
-            collateralAtoken.burnOnLiquidation(
+            //PTokens of the user
+            collateralPToken.burnOnLiquidation(
                 _user,
                 vars.liquidatedCollateralForFee
             );
@@ -312,7 +312,7 @@ contract LendingPoolLiquidationManager is
             maxCollateralToLiquidate,
             vars.borrowBalanceIncrease,
             msg.sender,
-            _receiveAToken,
+            _receivePToken,
             //solium-disable-next-line
             block.timestamp
         );

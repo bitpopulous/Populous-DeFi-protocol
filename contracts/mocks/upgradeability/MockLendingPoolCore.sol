@@ -19,7 +19,7 @@ import "../../lendingpool/LendingPoolCore.sol";
  * -
  * This is a mock contract to test upgradeability of the AddressProvider
  * -
- * This contract was cloned from aave and modified to work with the Populous World eco-system.
+ * This contract was cloned from Populous and modified to work with the Populous World eco-system.
  **/
 
 contract MockLendingPoolCore is LendingPoolCore {

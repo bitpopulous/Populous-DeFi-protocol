@@ -26,15 +26,14 @@
     }
   },
   "devDependencies": {
-    "openzeppelin-test-helpers": "^0.4.0",
     "@studydefi/money-legos": "^2.3.7",
     "@truffle/hdwallet-provider": "1.0.42",
-    "dotenv": "^8.2.0",
-    "ganache-cli": "^6.10.1",
-    "prettier": "^2.0.5",
-    "solidity-coverage": "0.7.0",
-    "truffle-wallet-provider": "0.0.5",
+    "@types/bignumber.js": "^5.0.0",
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.2",
     "chai": "^4.2.0",
+    "dotenv": "^8.2.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-prettier": "^4.3.0",
@@ -43,12 +42,17 @@
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-react": "^7.13.0",
     "eslint-plugin-security": "^1.4.0",
+    "ganache-cli": "^6.10.1",
+    "openzeppelin-test-helpers": "^0.4.0",
+    "prettier": "^2.0.5",
     "prettier-plugin-solidity": "^1.0.0-alpha.22",
-    "solhint": "^2.1.0"
+    "solhint": "^2.1.0",
+    "solidity-coverage": "0.7.0"
   },
   "homepage": "https://github.com/bitpopulous/DeFi",
   "dependencies": {
     "@openzeppelin/contracts": "^2.5.0",
-    "truffle": "^5.0.21"
+    "truffle": "^5.0.21",
+    "tsc": "^1.20150623.0"
   }
 }

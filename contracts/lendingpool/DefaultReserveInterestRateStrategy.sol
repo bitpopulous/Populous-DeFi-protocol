@@ -16,7 +16,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 * if there is need to update the calculation of the interest rates for a specific reserve,
 * a new version of this contract will be deployed.
 * -
-* This contract was cloned from aave and modified to work with the Populous World eco-system.
+* This contract was cloned from Populous and modified to work with the Populous World eco-system.
 **/
 
 contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {

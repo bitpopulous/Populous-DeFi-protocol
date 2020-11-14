@@ -8,7 +8,7 @@ import "../configuration/LendingPoolAddressesProvider.sol";
 import "../libraries/WadRayMath.sol";
 import "../interfaces/IPriceOracleGetter.sol";
 import "../interfaces/IFeeProvider.sol";
-import "../tokenization/AToken.sol";
+import "../tokenization/PToken.sol";
 
 import "./LendingPoolCore.sol";
 
@@ -18,7 +18,7 @@ import "./LendingPoolCore.sol";
  *Implements functions to fetch data from the core, and aggregate them in order to allow computation
  * on the compounded balances and the account balances in ETH
  * -
- * This contract was cloned from aave and modified to work with the Populous World eco-system.
+ * This contract was cloned from Populous and modified to work with the Populous World eco-system.
  **/
 
 contract LendingPoolDataProvider is VersionedInitializable {
@@ -424,7 +424,7 @@ contract LendingPoolDataProvider is VersionedInitializable {
             uint256 utilizationRate,
             uint256 liquidityIndex,
             uint256 variableBorrowIndex,
-            address aTokenAddress,
+            address PTokenAddress,
             uint40 lastUpdateTimestamp
         )
     {
@@ -443,7 +443,7 @@ contract LendingPoolDataProvider is VersionedInitializable {
         variableBorrowIndex = core.getReserveVariableBorrowsCumulativeIndex(
             _reserve
         );
-        aTokenAddress = core.getReserveATokenAddress(_reserve);
+        PTokenAddress = core.getReservePTokenAddress(_reserve);
         lastUpdateTimestamp = core.getReserveLastUpdate(_reserve);
     }
 
@@ -484,7 +484,7 @@ contract LendingPoolDataProvider is VersionedInitializable {
         external
         view
         returns (
-            uint256 currentATokenBalance,
+            uint256 currentPTokenBalance,
             uint256 currentBorrowBalance,
             uint256 principalBorrowBalance,
             uint256 borrowRateMode,
@@ -496,7 +496,7 @@ contract LendingPoolDataProvider is VersionedInitializable {
             bool usageAsCollateralEnabled
         )
     {
-        currentATokenBalance = AToken(core.getReserveATokenAddress(_reserve))
+        currentPTokenBalance = PToken(core.getReservePTokenAddress(_reserve))
             .balanceOf(_user);
         CoreLibrary.InterestRateMode mode = core.getUserCurrentBorrowRateMode(
             _reserve,

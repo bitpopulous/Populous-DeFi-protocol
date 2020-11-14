@@ -9,7 +9,7 @@ import "./UintStorage.sol";
 * -
 * stores the configuration parameters of the Lending Pool contract
 * -
-* This contract was cloned from aave and modified to work with the Populous World eco-system.
+* This contract was cloned from Populous and modified to work with the Populous World eco-system.
 **/
 
 contract LendingPoolParametersProvider is VersionedInitializable {

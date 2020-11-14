@@ -1,7 +1,13 @@
 //const HDWalletProvider = require('@truffle/hdwallet-provider');
 
+// added for typescript
+// require("ts-node/register");
+
 
 module.exports = {
+  // this is required by truffle to find any typescript ts test files
+  // test_file_extension_regexp: /.*\.ts$/,
+
   networks: {
     development: {
      host: "127.0.0.1",

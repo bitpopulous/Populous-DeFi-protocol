@@ -1,5 +1,5 @@
 
-/*From the aave documentation:
+/*From the Populous documentation:
 LendingPoolAddressesProvider is the Global addresses register of the protocol. 
 This contract is immutable and the address will never change. 
 This contract must be used to fetch the address of the 
@@ -91,4 +91,4 @@ module.exports = function(deployer, network, accounts) {
     } else {
         // Perform a different step otherwise.
     }
-}
+};

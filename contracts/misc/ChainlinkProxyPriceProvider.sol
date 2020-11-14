@@ -12,10 +12,10 @@ import "../libraries/EthAddressLib.sol";
  *   Proxy smart contract to get the price of an asset from a price source, with Chainlink Aggregator
  *   smart contracts as primary option
  * - If the returned price by a Chainlink aggregator is <= 0, the call is forwarded to a fallbackOracle
- * - Owned by the Aave governance system, allowed to add sources for assets, replace them
+ * - Owned by the Populous governance system, allowed to add sources for assets, replace them
  *   and change the fallbackOracle
  * -
- * This contract was cloned from aave and modified to work with the Populous World eco-system.
+ * This contract was cloned from Populous and modified to work with the Populous World eco-system.
  **/
 contract ChainlinkProxyPriceProvider is IPriceOracleGetter, Ownable {
     event AssetSourceUpdated(address indexed asset, address indexed source);
@@ -38,7 +38,7 @@ contract ChainlinkProxyPriceProvider is IPriceOracleGetter, Ownable {
         internalSetAssetsSources(_assets, _sources);
     }
 
-    /// @notice External function called by the Aave governance to set or replace sources of assets
+    /// @notice External function called by the Populous governance to set or replace sources of assets
     /// @param _assets The addresses of the assets
     /// @param _sources The address of the source of each asset
     function setAssetSources(
@@ -49,7 +49,7 @@ contract ChainlinkProxyPriceProvider is IPriceOracleGetter, Ownable {
     }
 
     /// @notice Sets the fallbackOracle
-    /// - Callable only by the Aave governance
+    /// - Callable only by the Populous governance
     /// @param _fallbackOracle The address of the fallbackOracle
     function setFallbackOracle(address _fallbackOracle) external onlyOwner {
         internalSetFallbackOracle(_fallbackOracle);

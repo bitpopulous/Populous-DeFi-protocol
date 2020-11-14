@@ -5,7 +5,7 @@ pragma solidity ^0.5.0;
 * -
 * Interface for the Populous borrow rate oracle. Provides the average market borrow rate to be used as a base for the stable borrow rate calculations
 * -
-* This contract was cloned from aave and modified to work with the Populous World eco-system.
+* This contract was cloned from Populous and modified to work with the Populous World eco-system.
 **/
 
 interface ILendingRateOracle {

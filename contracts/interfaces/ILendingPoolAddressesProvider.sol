@@ -5,7 +5,7 @@ pragma solidity ^0.5.0;
 * -
 * Provides the interface to fetch the LendingPoolCore address
 * -
-* This contract was cloned from aave and modified to work with the Populous World eco-system.
+* This contract was cloned from Populous and modified to work with the Populous World eco-system.
 **/
 
 contract ILendingPoolAddressesProvider {

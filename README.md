@@ -5,15 +5,16 @@ Ethereum DeFi smart contracts for Populous
 ## Usage
 
 ```
-npm i
+npm i - to install dependencies
+npm test - to run truffle tests
 ```
 
 ## Dependencies/Environment Setup
 
 ```
 Truffle v5.0.0 (core: 5.0.0)
-Solidity v0.5.0 (solc-js)
-Node v8.9.4
+Solidity - 0.5.16 (solc-js)
+Node v10.13.0
 ganache-cli for local dpeloyment and testing - npm install -g ganache-cli@latest
 ```
 

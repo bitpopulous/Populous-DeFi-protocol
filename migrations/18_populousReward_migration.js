@@ -31,7 +31,7 @@ module.exports = function(deployer, network, accounts) {
             })
             .then(function(instance) {
                 underlyingAsset = instance;
-                //add deployed Dai instance to aDai
+                //add deployed Dai instance to PDai
                 return deployer.deploy(PopulousReward, _core.address, underlyingAsset.address, root, '1', '2', '5', {gas: 6721975, from: root});
             });
         });
@@ -39,4 +39,4 @@ module.exports = function(deployer, network, accounts) {
     } else {
         // Perform a different step otherwise.
     }
-}
+};

@@ -21,7 +21,7 @@ import "../libraries/EthAddressLib.sol";
 *  - If the address(0) is used as receiver, this contract will trade in Kyber to tokenToBurn (LEND)
 *    and burn it (sending to address(0) the tokenToBurn)
 * -
-* This contract was cloned from aave and modified to work with the Populous World eco-system.
+* This contract was cloned from Populous and modified to work with the Populous World eco-system.
 **/
 
 contract TokenDistributor is VersionedInitializable {

@@ -28,7 +28,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../lendingpool/LendingPoolCore.sol";
 
-import "../tokenization/AToken.sol";
+import "../tokenization/PToken.sol";
 
 
 contract PopulousReward is Ownable  {
@@ -43,7 +43,7 @@ contract PopulousReward is Ownable  {
 
     // Info of each pool.
     struct PoolInfo {
-        IERC20 aToken;
+        IERC20 PToken;
         uint256 allocPoint;       // How many allocation points assigned to this pool. Tokens to distribute per block.
         uint256 lastRewardBlock;  // Last block number that Token distribution occurs.
         uint256 accTokenPerShare; // Accumulated Token per share, times 1e12. See below.
@@ -100,16 +100,16 @@ contract PopulousReward is Ownable  {
         core=_lendingPoolCore;
     }
     
-    // Add a new aToken to the pool. Can only be called by the owner.
+    // Add a new PToken to the pool. Can only be called by the owner.
     // XXX DO NOT add the same A token more than once. Rewards will be messed up if you do.
     function add(uint256 _allocPoint, address _reserve) public onlyOwner {
         
-        AToken aToken = AToken(core.getReserveATokenAddress(_reserve));
+        PToken PToken = PToken(core.getReservePTokenAddress(_reserve));
         uint256 lastRewardBlock = block.number > startBlock ? block.number : startBlock;
         totalAllocPoint = totalAllocPoint.add(_allocPoint);
         
         PoolInfo storage pool = poolInfo[_reserve];
-        pool.aToken=aToken;
+        pool.PToken=PToken;
         pool.allocPoint= _allocPoint;
         pool.lastRewardBlock= lastRewardBlock;
         pool.accTokenPerShare= 0;
@@ -131,12 +131,12 @@ contract PopulousReward is Ownable  {
     function migrate(address _reserve) public {
         require(address(migrator) != address(0), "migrate: no migrator");
         PoolInfo storage pool = poolInfo[_reserve];
-        IERC20 aToken = pool.aToken;
-        uint256 bal = aToken.balanceOf(address(this));
-        aToken.safeApprove(address(migrator), bal);
-        IERC20 newaToken = migrator.migrate(aToken);
-        require(bal == newaToken.balanceOf(address(this)), "migrate: bad");
-        pool.aToken = aToken;
+        IERC20 PToken = pool.PToken;
+        uint256 bal = PToken.balanceOf(address(this));
+        PToken.safeApprove(address(migrator), bal);
+        IERC20 newPToken = migrator.migrate(PToken);
+        require(bal == newPToken.balanceOf(address(this)), "migrate: bad");
+        pool.PToken = PToken;
     }
 
     // Return reward multiplier over the given _from to _to block.
@@ -157,18 +157,18 @@ contract PopulousReward is Ownable  {
         PoolInfo storage pool = poolInfo[_reserve];
         UserInfo storage user = userInfo[_reserve][_user];
         uint256 accTokenPerShare = pool.accTokenPerShare;
-        uint256 aTokenSupply = pool.aToken.balanceOf(msg.sender);
-        if (block.number > pool.lastRewardBlock && aTokenSupply != 0) {
+        uint256 PTokenSupply = pool.PToken.balanceOf(msg.sender);
+        if (block.number > pool.lastRewardBlock && PTokenSupply != 0) {
             uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
             uint256 rewardTokenReward = multiplier.mul(rewardTokenPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
-            accTokenPerShare = accTokenPerShare.add(rewardTokenReward.mul(1e12).div(aTokenSupply));
+            accTokenPerShare = accTokenPerShare.add(rewardTokenReward.mul(1e12).div(PTokenSupply));
         }
         return user.amount.mul(accTokenPerShare).div(1e12).sub(user.rewardDebt);
     }
     
     function getpoolinfo(address _reserve) public view returns(IERC20 ,uint256 ,uint256,uint256 ){
         PoolInfo storage pool = poolInfo[_reserve];
-        return(pool.aToken,pool.allocPoint,pool.lastRewardBlock,pool.accTokenPerShare);
+        return(pool.PToken,pool.allocPoint,pool.lastRewardBlock,pool.accTokenPerShare);
 
     }
     
@@ -183,7 +183,7 @@ contract PopulousReward is Ownable  {
         if (block.number <= pool.lastRewardBlock) {
             return;
         }
-        uint256 lpSupply = pool.aToken.balanceOf(msg.sender);
+        uint256 lpSupply = pool.PToken.balanceOf(msg.sender);
         if (lpSupply == 0) {
             pool.lastRewardBlock = block.number;
             return;
@@ -206,7 +206,7 @@ contract PopulousReward is Ownable  {
             uint256 pending = user.amount.mul(pool.accTokenPerShare).div(1e12).sub(user.rewardDebt);
             saferewardTokenTransfer(msg.sender, pending);
         }
-        //pool.aToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+        //pool.PToken.safeTransferFrom(address(msg.sender), address(this), _amount);
         user.amount = user.amount.add(_amount);
         user.rewardDebt = user.amount.mul(pool.accTokenPerShare).div(1e12);
         emit Deposit(msg.sender, _reserve, _amount);
@@ -222,7 +222,7 @@ contract PopulousReward is Ownable  {
         saferewardTokenTransfer(msg.sender, pending);
         user.amount = user.amount.sub(_amount);
         user.rewardDebt = user.amount.mul(pool.accTokenPerShare).div(1e12);
-        //pool.aToken.safeTransfer(address(msg.sender), _amount);
+        //pool.PToken.safeTransfer(address(msg.sender), _amount);
         emit Withdraw(msg.sender, _reserve, _amount);
     }
     
@@ -241,7 +241,7 @@ contract PopulousReward is Ownable  {
     function emergencyWithdraw(address _reserve) public {
         //PoolInfo storage pool = poolInfo[_reserve];
         UserInfo storage user = userInfo[_reserve][msg.sender];
-        //pool.aToken.safeTransfer(address(msg.sender), user.amount);
+        //pool.PToken.safeTransfer(address(msg.sender), user.amount);
         emit EmergencyWithdraw(msg.sender, _reserve, user.amount);
         user.amount = 0;
         user.rewardDebt = 0;

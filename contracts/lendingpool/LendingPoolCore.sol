@@ -13,8 +13,8 @@ import "../interfaces/IReserveInterestRateStrategy.sol";
 import "../libraries/WadRayMath.sol";
 import "../libraries/EthAddressLib.sol";
 
-//import "../tokenization/AToken.sol";
-import "../interfaces/IAToken.sol";
+//import "../tokenization/PToken.sol";
+import "../interfaces/IPToken.sol";
 
 
 /**
@@ -25,7 +25,7 @@ import "../interfaces/IAToken.sol";
 * (eg, updateStateOnBorrow() does not enforce that borrowed is enabled on the reserve).
 * The check that an action can be performed is a duty of the overlying LendingPool contract.
  * -
- * This contract was cloned from aave and modified to work with the Populous World eco-system.
+ * This contract was cloned from Populous and modified to work with the Populous World eco-system.
  **/
 
 contract LendingPoolCore is VersionedInitializable {
@@ -302,7 +302,7 @@ contract LendingPoolCore is VersionedInitializable {
     * @param _feeLiquidated the amount of origination fee being liquidated
     * @param _liquidatedCollateralForFee the amount of collateral equivalent to the origination fee + bonus
     * @param _balanceIncrease the accrued interest on the borrowed amount
-    * @param _liquidatorReceivesAToken true if the liquidator will receive aTokens, false otherwise
+    * @param _liquidatorReceivesPToken true if the liquidator will receive PTokens, false otherwise
     **/
     function updateStateOnLiquidation(
         address _principalReserve,
@@ -313,7 +313,7 @@ contract LendingPoolCore is VersionedInitializable {
         uint256 _feeLiquidated,
         uint256 _liquidatedCollateralForFee,
         uint256 _balanceIncrease,
-        bool _liquidatorReceivesAToken
+        bool _liquidatorReceivesPToken
     ) external onlyLendingPool {
         updatePrincipalReserveStateOnLiquidationInternal(
             _principalReserve,
@@ -336,7 +336,7 @@ contract LendingPoolCore is VersionedInitializable {
 
         updateReserveInterestRatesAndTimestampInternal(_principalReserve, _amountToLiquidate, 0);
 
-        if (!_liquidatorReceivesAToken) {
+        if (!_liquidatorReceivesPToken) {
             updateReserveInterestRatesAndTimestampInternal(
                 _collateralReserve,
                 0,
@@ -554,7 +554,7 @@ contract LendingPoolCore is VersionedInitializable {
     }
 
     /**
-    * @dev gets the underlying asset balance of a user based on the corresponding aToken balance.
+    * @dev gets the underlying asset balance of a user based on the corresponding PToken balance.
     * @param _reserve the reserve address
     * @param _user the user address
     * @return the underlying deposit balance of the user
@@ -565,8 +565,8 @@ contract LendingPoolCore is VersionedInitializable {
         view
         returns (uint256)
     {
-        IAToken aToken = IAToken(reserves[_reserve].aTokenAddress);
-        return aToken.balanceOf(_user);
+        IPToken PToken = IPToken(reserves[_reserve].PTokenAddress);
+        return PToken.balanceOf(_user);
 
     }
 
@@ -581,14 +581,14 @@ contract LendingPoolCore is VersionedInitializable {
     }
 
     /**
-    * @dev gets the aToken contract address for the reserve
+    * @dev gets the PToken contract address for the reserve
     * @param _reserve the reserve address
-    * @return the address of the aToken contract
+    * @return the address of the PToken contract
     **/
 
-    function getReserveATokenAddress(address _reserve) public view returns (address) {
+    function getReservePTokenAddress(address _reserve) public view returns (address) {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
-        return reserve.aTokenAddress;
+        return reserve.PTokenAddress;
     }
 
     /**
@@ -1050,17 +1050,17 @@ contract LendingPoolCore is VersionedInitializable {
     /**
     * @dev initializes a reserve
     * @param _reserve the address of the reserve
-    * @param _aTokenAddress the address of the overlying aToken contract
+    * @param _PTokenAddress the address of the overlying PToken contract
     * @param _decimals the decimals of the reserve currency
     * @param _interestRateStrategyAddress the address of the interest rate strategy contract
     **/
     function initReserve(
         address _reserve,
-        address _aTokenAddress,
+        address _PTokenAddress,
         uint256 _decimals,
         address _interestRateStrategyAddress
     ) external onlyLendingPoolConfigurator {
-        reserves[_reserve].init(_aTokenAddress, _decimals, _interestRateStrategyAddress);
+        reserves[_reserve].init(_PTokenAddress, _decimals, _interestRateStrategyAddress);
         addReserveToListInternal(_reserve);
 
     }
@@ -1082,7 +1082,7 @@ contract LendingPoolCore is VersionedInitializable {
         require(getReserveTotalBorrows(lastReserve) == 0, "Cannot remove a reserve with liquidity deposited");
 
         reserves[lastReserve].isActive = false;
-        reserves[lastReserve].aTokenAddress = address(0);
+        reserves[lastReserve].PTokenAddress = address(0);
         reserves[lastReserve].decimals = 0;
         reserves[lastReserve].lastLiquidityCumulativeIndex = 0;
         reserves[lastReserve].lastVariableBorrowCumulativeIndex = 0;
