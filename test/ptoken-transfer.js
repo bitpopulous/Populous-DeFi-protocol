@@ -3,6 +3,7 @@
 const { BN, expectRevert, time, constants } = require('openzeppelin-test-helpers');
 const { expect } = require('chai');
 const { utils } = web3;
+const BigNumber = require('bignumber.js');
 
 const DefaultReserveInterestRateStrategy = artifacts.require("DefaultReserveInterestRateStrategy");
 const MintableERC20 = artifacts.require('MintableERC20');
@@ -30,11 +31,10 @@ let APPROVAL_AMOUNT_LENDING_POOL_CORE, ETHEREUM_ADDRESS, oneEther, RATEMODE_STAB
 const convertToCurrencyDecimals = async (token_address, amount) => {
   let _token = await Dai.at(token_address);
   let pDecimals = await _token.decimals();
-  console.log(Number(pDecimals.toString()), 'dai decimals');
-
-  //console.log(pDecimals)
-  console.log((10**pDecimals * amount).toString());
-  return (10**pDecimals * amount).toString();
+  //console.log(Number(pDecimals.toString()), 'dai decimals');
+  
+  let converted = new BigNumber(10**Number(pDecimals.toString()) * amount); 
+  return converted;
 };
 
 contract('PToken: Transfer', async ([deployer, ...users]) => {
@@ -49,58 +49,52 @@ contract('PToken: Transfer', async ([deployer, ...users]) => {
   let lro, fp, getFPAddress, getLROAddress, getCLinkAddress,
   getlmAddress,   getLPCAddress,  lpc, getLPLAddress,
   _coreLibrary, pm, getPMAddress, getTKAddress, _tokenDistributorInstance, _lendingPoolLiquidationManager,
-  _DefaultReserveInterestRateStrategy;
+  _DefaultReserveInterestRateStrategy, lendingPoolInstance, _poolConfigInstance;
 
 
   before('Initializing test variables', async () => {
     // init lending addresses provider
     addressesProviderInstance = await LendingPoolAddressesProvider.new({from: deployer});
 
-    // init lending pool liquidation manager
-    _lendingPoolLiquidationManager = await LendingPoolLiquidationManager.new();
-    await addressesProviderInstance.setLendingPoolLiquidationManager(_lendingPoolLiquidationManager.address, {from: deployer});
-    getLPLAddress = await addressesProviderInstance.getLendingPoolLiquidationManager();
+    //init pool manager
+    await addressesProviderInstance.setLendingPoolManager(deployer, {from: deployer});
+    getlmAddress = await addressesProviderInstance.getLendingPoolManager();
 
-    //init token distributor
-    _tokenDistributorInstance = await TokenDistributor.new();
-    await addressesProviderInstance.setTokenDistributor(_tokenDistributorInstance.address, {from: deployer});
-    getTKAddress = await addressesProviderInstance.getTokenDistributor();
-
-    //init lending pool - sets proxy contract
-    _lendingPoolInstance = await LendingPool.new();
-    await addressesProviderInstance.setLendingPoolImpl(_lendingPoolInstance.address, {from: deployer});
-    getAddress = await addressesProviderInstance.getLendingPool();
-    
-    //init core with core library - sets proxy contract
-    _coreLibrary = await CoreLibrary.new();
-    await LendingPoolCore.link("CoreLibrary", _coreLibrary.address);
-    _lendingPoolCoreInstance = await LendingPoolCore.new();
-    await addressesProviderInstance.setLendingPoolCoreImpl(_lendingPoolCoreInstance.address, {from: deployer});
-    getLCAddress = await addressesProviderInstance.getLendingPoolCore();
-
-    
-    /* To link contract to library within tests 
-    const myLib = await MyLib.new();
-    await MyContract.link("MyLib", myLib.address);
-    const mycontract = await MyContract.new(); */
+    //init fee provider - sets proxy contract
+    fp = await FeeProvider.new();
+    await addressesProviderInstance.setFeeProviderImpl(fp.address, {from: deployer});
+    getFPAddress = await addressesProviderInstance.getFeeProvider();
 
     //init parameter provider
     pm = await LendingPoolParametersProvider.new();
     await addressesProviderInstance.setLendingPoolParametersProviderImpl(pm.address, {from: deployer});
     getPMAddress = await addressesProviderInstance.getLendingPoolParametersProvider();
-    //init data provider - sets proxy contract
-    dp = await LendingPoolDataProvider.new();
-    await addressesProviderInstance.setLendingPoolDataProviderImpl(dp.address, {from: deployer});
-    getDPAddress = await addressesProviderInstance.getLendingPoolDataProvider();
-    //============================================
+
+    //init lendingpoolcore with core library - sets proxy contract
+    _coreLibrary = await CoreLibrary.new();
+    await LendingPoolCore.link("CoreLibrary", _coreLibrary.address);
+    _lendingPoolCoreInstance = await LendingPoolCore.new();
+    await addressesProviderInstance.setLendingPoolCoreImpl(_lendingPoolCoreInstance.address, {from: deployer});
+    getLCAddress = await addressesProviderInstance.getLendingPoolCore();
+    /* To link contract to library within tests 
+    const myLib = await MyLib.new();
+    await MyContract.link("MyLib", myLib.address);
+    const mycontract = await MyContract.new(); */
+
     //init pool configurator - sets proxy contract
     lpc = await LendingPoolConfigurator.new();
     await addressesProviderInstance.setLendingPoolConfiguratorImpl(lpc.address, {from: deployer});
     getLPCAddress = await addressesProviderInstance.getLendingPoolConfigurator();
 
-    //init pool manager
-    await addressesProviderInstance.setLendingPoolManager(deployer, {from: deployer});
-    getlmAddress = await addressesProviderInstance.getLendingPoolManager();
+    //init data provider - sets proxy contract
+    dp = await LendingPoolDataProvider.new();
+    await addressesProviderInstance.setLendingPoolDataProviderImpl(dp.address, {from: deployer});
+    getDPAddress = await addressesProviderInstance.getLendingPoolDataProvider();
+
+    //init lending pool - sets proxy contract
+    _lendingPoolInstance = await LendingPool.new();
+    await addressesProviderInstance.setLendingPoolImpl(_lendingPoolInstance.address, {from: deployer});
+    getAddress = await addressesProviderInstance.getLendingPool();
 
     //init chain link proxy price provider - sets proxy contract
     clink = await ChainlinkProxyPriceProvider.new([], [], users[8]);
@@ -112,15 +106,19 @@ contract('PToken: Transfer', async ([deployer, ...users]) => {
     await addressesProviderInstance.setLendingRateOracle(lro.address, {from: deployer});
     getLROAddress = await addressesProviderInstance.getLendingRateOracle();
 
-    //init fee provider - sets proxy contract
-    fp = await FeeProvider.new();
-    await addressesProviderInstance.setFeeProviderImpl(fp.address, {from: deployer});
-    getFPAddress = await addressesProviderInstance.getFeeProvider();
+    // init lending pool liquidation manager
+    _lendingPoolLiquidationManager = await LendingPoolLiquidationManager.new();
+    await addressesProviderInstance.setLendingPoolLiquidationManager(_lendingPoolLiquidationManager.address, {from: deployer});
+    getLPLAddress = await addressesProviderInstance.getLendingPoolLiquidationManager();
+
+    //init token distributor
+    _tokenDistributorInstance = await TokenDistributor.new();
+    await addressesProviderInstance.setTokenDistributor(_tokenDistributorInstance.address, {from: deployer});
+    getTKAddress = await addressesProviderInstance.getTokenDistributor();
     
-    //============================================
     //init erc20 Dai
     _DAI = await Dai.new({from: deployer});
-    console.log(await convertToCurrencyDecimals(_DAI.address, 1000), '1000 in DAI');
+    //console.log(await convertToCurrencyDecimals(_DAI.address, 1000), '1000 in DAI');
     //init PDai
     let daiName = await _DAI.name();
     let daiSymbol = await _DAI.symbol();
@@ -142,53 +140,63 @@ contract('PToken: Transfer', async ([deployer, ...users]) => {
     let _stableRateSlope1 = "5";
     //uint256 slope of the stable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
     let _stableRateSlope2 = "5";
+    
     _DefaultReserveInterestRateStrategy = await DefaultReserveInterestRateStrategy.new(reserve_address, addressesProviderInstance.address,
       _baseVariableBorrowRate, _variableRateSlope1, _variableRateSlope2, _stableRateSlope1, _stableRateSlope2, {from: deployer});
-
-    //initialise the reserve via lending pool configurator (only pool manager can call)
+    
+    //initialise a DAI/PDAI reserve via lending pool configurator (only pool manager can call)
     //this  will create associated PToken and deposit and redeem should work after this
-     // address _reserve,
-      //uint8 _underlyingAssetDecimals,
-      //address _interestRateStrategyAddress
-    let _poolConfigInstance = await LendingPoolConfigurator.at(getLPCAddress); // targeting proxy
+    // address _reserve,
+    //uint8 _underlyingAssetDecimals,
+    //address _interestRateStrategyAddress
+    _poolConfigInstance = await LendingPoolConfigurator.at(getLPCAddress); // targeting proxy
     await _poolConfigInstance.initReserve(_DAI.address, Number(daiDecimals.toString()), _DefaultReserveInterestRateStrategy.address, {from: deployer});
+    
+    // refresh lending pool stored address in lending pool core - deposits and others will fail if this is not done
+    // this must be done upon new deployment 
+    // onlyLendingPoolManager can call refreshLendingPoolCoreConfiguration in LendingPoolConfigurator
+    await _poolConfigInstance.refreshLendingPoolCoreConfiguration({from: deployer});
+
+    // get DAI/PDAI reserve data
+    lendingPoolInstance = await LendingPool.at(getAddress); // targeting proxy
+    let reserveData = await lendingPoolInstance.getReserveData(_DAI.address);
+    console.log(reserveData, "DAI reserve data");
 
   });
 
-  it('User 0 deposits 1000 DAI, transfers to user 1', async () => {
-    // GET RESERVE DATA 
-    //let lendingPoolInstance = await LendingPool.at(getAddress); // targeting proxy
-    //let dat = await lendingPoolInstance.getReserveData(_DAI.address);
-    //console.log(dat);
-
-
-    //await _DAI.mint(await convertToCurrencyDecimals(_DAI.address, 1000), {
-    //await _DAI.mint(new BN(10**18 * 1000), {
-    //await _DAI.mint(Math.pow(10,18)* 1000, {
-    await _DAI.mint('1000', {
+  it('User 0 deposits 500 DAI, transfers to user 1', async () => {
+    await _DAI.mint(await convertToCurrencyDecimals(_DAI.address, 500), {
+    //await _DAI.mint("500000000000000000000" , {
       from: users[0],
     });
     const initialBalance = await _DAI.balanceOf(users[0]);
-    //console.log(initialBalance.toNumber());
-    expect(initialBalance.toNumber()).to.be.equal(1000, "Invalid balance after mint")
-
-    await _DAI.approve(getLCAddress, '1000', {
+    //console.log(initialBalance.toString()); //500000000000000000000
+    //console.log(new BigNumber(initialBalance).shiftedBy(-18).toNumber()); //500
+    expect(Number(initialBalance.toString())).to.be.equal(500000000000000000000, "Invalid balance after mint")
+    expect(new BigNumber(initialBalance).shiftedBy(-18).toNumber()).to.be.equal(500, "Invalid balance after mint")
+    
+    await _DAI.approve(getLCAddress, await convertToCurrencyDecimals(_DAI.address, 500), {
       from: users[0],
     });
     /* 
     _allowances is a private mapping variable
     const approval = await _DAI._allowances().call(users[0], getLCAddress);
-    expect(approval.toNumber()).to.be.equal(1000, "Approval for lending core contract failed") */
+    expect(approval.toNumber()).to.be.equal(1000, "Approval for lending core contract failed") 
+    */
 
-    //user 0 deposits 1000 DAI
-    //const amountDAItoDeposit = await convertToCurrencyDecimals(_DAI.address, '1000');
-    const amountDAItoDeposit = '1000';
-    
-    /*
-    await lendingPoolInstance.deposit(_DAI.address, amountDAItoDeposit, '0', {
+    //user 0 deposits 500 DAI
+    const amountDAItoDeposit = await convertToCurrencyDecimals(_DAI.address, 500);
+
+    //before deposit:
+    //ensure that onlyLendingPool in core does not lead to errors - see deployment and config sequence above
+    //nonReentrant modifier in lendingPool is buggy and leading to 
+    //revert ReentrancyGuard: reentrant call -- Reason given: ReentrancyGuard: reentrant call.
+    await lendingPoolInstance.deposit(_DAI.address, amountDAItoDeposit, '1', {
       from: users[0],
     });
 
+    /*
+    //PTokenAddress = core.getReservePTokenAddress(_reserve);
     await _PDai.transfer(users[1], amountDAItoDeposit, {from: users[0]})
 
     const fromBalance = await _PDai.balanceOf(users[0])

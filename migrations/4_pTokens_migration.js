@@ -1,7 +1,7 @@
 const PDai = artifacts.require('PDai');
 const PUSDC = artifacts.require('PUSDC');
-const Dai = artifacts.require('Dai');
-const USDC = artifacts.require('USDC');
+const Dai = artifacts.require('MockDai');
+const USDC = artifacts.require('MockUSDC');
 const LendingPoolAddressesProvider = artifacts.require('LendingPoolAddressesProvider');
 
 
@@ -43,7 +43,7 @@ module.exports = function(deployer, network, accounts) {
                 addressesProvider = instance;
             })
             .then(function() {
-            return Dai.deployed()
+            return USDC.deployed()
             })
             .then(function(instance) {
                 underlyingAsset = instance;

@@ -52,6 +52,7 @@
   "homepage": "https://github.com/bitpopulous/DeFi",
   "dependencies": {
     "@openzeppelin/contracts": "^2.5.0",
+    "bignumber.js": "^9.0.1",
     "truffle": "^5.0.21",
     "tsc": "^1.20150623.0"
   }

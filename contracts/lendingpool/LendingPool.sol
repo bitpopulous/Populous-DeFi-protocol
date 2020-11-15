@@ -307,17 +307,17 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         onlyUnfreezedReserve(_reserve)
         onlyAmountGreaterThanZero(_amount)
     {
-        PToken PToken = PToken(core.getReservePTokenAddress(_reserve));
+        PToken pToken = PToken(core.getReservePTokenAddress(_reserve));
 
-        bool isFirstDeposit = PToken.balanceOf(msg.sender) == 0;
+        bool isFirstDeposit = pToken.balanceOf(msg.sender) == 0;
 
         core.updateStateOnDeposit(_reserve, msg.sender, _amount, isFirstDeposit);
 
         //minting PToken to user 1:1 with the specific exchange rate
-        PToken.mintOnDeposit(msg.sender, _amount);
+        pToken.mintOnDeposit(msg.sender, _amount);
 
-        //transfer to the core contract
-        //core.transferToReserve.value(msg.value)(_reserve, msg.sender, _amount);
+        //transfer deposit from senders address to the core contract
+        core.transferToReserve.value(msg.value)(_reserve, msg.sender, _amount);
 
         //solium-disable-next-line
         emit Deposit(_reserve, msg.sender, _amount, _referralCode, block.timestamp);

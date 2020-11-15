@@ -86,7 +86,7 @@ contract PopulousReward is Ownable  {
         uint256 _startBlock,
         uint256 _bonusEndBlock
     ) public {
-        core=_core;
+        core = _core;
         rewardToken = _rewardToken;
         devaddr = _devaddr;
         rewardTokenPerBlock = _rewardTokenPerBlock;

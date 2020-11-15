@@ -1,6 +1,6 @@
 // location: contracts/lendingpool
 const DefaultReserveInterestRateStrategy = artifacts.require('DefaultReserveInterestRateStrategy');
-const Dai = artifacts.require('Dai');
+const Dai = artifacts.require('MockDAI');
 const LendingPoolAddressesProvider = artifacts.require('LendingPoolAddressesProvider');
 
 
@@ -10,33 +10,29 @@ module.exports = function (deployer, network, accounts) {
 
     if (network == "development") {
         // Do something specific to the network named "development".
-        
-        let ray = 10**27;
-        let wad = Math.pow(10, 18);
+
         /* Solidity WadRayMath.sol library guide
         * wads (decimal numbers with 18 digits precision) and rays (decimals with 27 digits)
         */
-
         /* DefaultReserveInterestRateStrategy field variables
         * uint256 public constant EXCESS_UTILIZATION_RATE = 0.2 * 1e27;
         * uint256 public constant OPTIMAL_UTILIZATION_RATE = 0.8 * 1e27;
         */
-        
         
         //Constructor Parameters
         //ERC-20 token address
         let _reserve;
         let _lendingPoolAddressesProvider;
         //uint256 base variable borrow rate when Utilization rate = 0. Expressed in ray
-        let _baseVariableBorrowRate = "500";
+        let _baseVariableBorrowRate = "5";
         //uint256 slope of the variable interest curve when utilization rate > 0 and <= OPTIMAL_UTILIZATION_RATE. Expressed in ray
-        let _variableRateSlope1 = "500";
+        let _variableRateSlope1 = "5";
         //uint256 slope of the variable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
-        let _variableRateSlope2 = "500";
+        let _variableRateSlope2 = "5";
         //uint256 slope of the stable interest curve when utilization rate > 0 and <= OPTIMAL_UTILIZATION_RATE. Expressed in ray
-        let _stableRateSlope1 = "500";
+        let _stableRateSlope1 = "5";
         //uint256 slope of the stable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
-        let _stableRateSlope2 = "500";
+        let _stableRateSlope2 = "5";
         deployer.then(function(){
             return LendingPoolAddressesProvider.deployed()
             .then(function(instance) {

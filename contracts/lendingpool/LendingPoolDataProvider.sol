@@ -444,7 +444,7 @@ contract LendingPoolDataProvider is VersionedInitializable {
             _reserve
         );
         PTokenAddress = core.getReservePTokenAddress(_reserve);
-        lastUpdateTimestamp = core.getReserveLastUpdate(_reserve);
+        lastUpdateTimestamp = core.getReserveLastUpdate(_reserve); 
     }
 
     function getUserAccountData(address _user)

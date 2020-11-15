@@ -1,5 +1,5 @@
-const Dai = artifacts.require('Dai');
-const USDC = artifacts.require('USDC');
+const Dai = artifacts.require('MockDAI');
+const USDC = artifacts.require('MockUSDC');
 
 module.exports = function(deployer, network, accounts) {
     // Using the accounts within the migrations.

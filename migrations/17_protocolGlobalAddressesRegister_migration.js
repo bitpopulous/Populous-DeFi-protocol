@@ -1,5 +1,5 @@
 
-/*From the Populous documentation:
+/*From the documentation:
 LendingPoolAddressesProvider is the Global addresses register of the protocol. 
 This contract is immutable and the address will never change. 
 This contract must be used to fetch the address of the 
@@ -66,22 +66,24 @@ module.exports = function(deployer, network, accounts) {
             _priceOracle = await PriceOracle.deployed(),
             _lendingRateOracle = await LendingRateOracle.deployed(),
             _feeProvider = await FeeProvider.deployed(),
-            _tokenDistributor = await TokenDistributor.deployed();
-            // console.log(_lendingPool.address);
-            let _lendingPoolAddressesProvider = await LendingPoolAddressesProvider.deployed();
+            _tokenDistributor = await TokenDistributor.deployed(),
+            _lendingPoolAddressesProvider = await LendingPoolAddressesProvider.deployed();
+
 
             return Promise.all([
-              _lendingPoolAddressesProvider.setLendingPoolManager(root),
-              _lendingPoolAddressesProvider.setLendingPoolImpl(_lendingPool.address),
+                //the smart contracts have to be set in this order for things to function
+              _lendingPoolAddressesProvider.setLendingPoolManager(_lendingPoolManager),
+              _lendingPoolAddressesProvider.setFeeProviderImpl(_feeProvider.address),
+              _lendingPoolAddressesProvider.setLendingPoolParametersProviderImpl(_lendingPoolParametersProvider.address),
               _lendingPoolAddressesProvider.setLendingPoolCoreImpl(_lendingPoolCore.address),
               _lendingPoolAddressesProvider.setLendingPoolConfiguratorImpl(_lendingPoolConfigurator.address),
-              _lendingPoolAddressesProvider.setLendingPoolParametersProviderImpl(_lendingPoolParametersProvider.address),
-              _lendingPoolAddressesProvider.setFeeProviderImpl(_feeProvider.address),
-              _lendingPoolAddressesProvider.setLendingPoolLiquidationManager(_lendingPoolLiquidationManager.address),
+              _lendingPoolAddressesProvider.setLendingPoolDataProviderImpl(_lendingPoolDataProvider.address),
+              _lendingPoolAddressesProvider.setLendingPoolImpl(_lendingPool.address),
               _lendingPoolAddressesProvider.setPriceOracle(_priceOracle.address),
               _lendingPoolAddressesProvider.setLendingRateOracle(_lendingRateOracle.address),
+              _lendingPoolAddressesProvider.setLendingPoolLiquidationManager(_lendingPoolLiquidationManager.address),
               _lendingPoolAddressesProvider.setTokenDistributor(_tokenDistributor.address),
-              _lendingPoolAddressesProvider.setLendingPoolDataProviderImpl(_lendingPoolDataProvider.address)
+
             ]).then(function(results) {
               console.log(results);
               console.log(results.length);
