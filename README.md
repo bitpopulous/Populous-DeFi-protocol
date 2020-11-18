@@ -312,7 +312,7 @@ Starting migrations...
 
 20_populousReward_migration.js
 ==============================
-0xB1B0dd29beB78692F98f6068e81010d65Cc62D17 USDC address for reward token
+0xB1B0dd29beB78692F98f6068e81010d65Cc62D17 USDC to represent `PXT` address for reward token
 
    Deploying 'PopulousReward'
    --------------------------
