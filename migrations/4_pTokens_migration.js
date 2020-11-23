@@ -1,6 +1,6 @@
 const PDai = artifacts.require('PDai');
 const PUSDC = artifacts.require('PUSDC');
-const Dai = artifacts.require('MockDai');
+const Dai = artifacts.require('MockDAI');
 const USDC = artifacts.require('MockUSDC');
 const LendingPoolAddressesProvider = artifacts.require('LendingPoolAddressesProvider');
 
@@ -32,7 +32,7 @@ module.exports = function(deployer, network, accounts) {
             .then(function(instance) {
                 underlyingAsset = instance;
                 //add deployed Dai instance to PDai
-                return deployer.deploy(PDai, addressesProvider.address, underlyingAsset.address, 18, 'PDai', 'PDai', {gas: 6721975, from: root});
+                return deployer.deploy(PDai, addressesProvider.address, underlyingAsset.address, 18, 'PDai', 'PDai', {gas: 6721975, from: root, overwrite: true});
             });
         });
 
@@ -48,11 +48,49 @@ module.exports = function(deployer, network, accounts) {
             .then(function(instance) {
                 underlyingAsset = instance;
                 //add deployed Dai instance to PDai
-                return deployer.deploy(PUSDC, addressesProvider.address, underlyingAsset.address, 6, 'PUSDC', 'PUSDC', {gas: 6721975, from: root});
+                return deployer.deploy(PUSDC, addressesProvider.address, underlyingAsset.address, 6, 'PUSDC', 'PUSDC', {gas: 6721975, from: root, overwrite: true});
             });
         });
 
     } else {
         // Perform a different step otherwise.
+        let underlyingAsset, addressesProvider;
+        /* 
+        Note: constructor variables for PTokens
+        LendingPoolAddressesProvider _addressesProvider,
+        address _underlyingAsset,
+        uint8 _underlyingAssetDecimals,
+        string memory _name,
+        string memory _symbol */
+        deployer.then(function(){
+            return LendingPoolAddressesProvider.deployed()
+            .then(function(instance) {
+                addressesProvider = instance;
+            })
+            .then(function() {
+            return Dai.deployed()
+            })
+            .then(function(instance) {
+                underlyingAsset = instance;
+                //add deployed Dai instance to PDai
+                return deployer.deploy(PDai, addressesProvider.address, underlyingAsset.address, 18, 'PDai', 'PDai', {gas: 6721975, from: root, overwrite: false});
+            });
+        });
+
+
+        deployer.then(function(){
+            return LendingPoolAddressesProvider.deployed()
+            .then(function(instance) {
+                addressesProvider = instance;
+            })
+            .then(function() {
+            return USDC.deployed()
+            })
+            .then(function(instance) {
+                underlyingAsset = instance;
+                //add deployed Dai instance to PDai
+                return deployer.deploy(PUSDC, addressesProvider.address, underlyingAsset.address, 6, 'PUSDC', 'PUSDC', {gas: 6721975, from: root, overwrite: false});
+            });
+        });
     }
 };

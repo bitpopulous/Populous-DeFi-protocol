@@ -14,10 +14,20 @@ module.exports = function (deployer, network, accounts) {
                 _lendingPoolAddressesProvider = instance;
             })
             .then(function() {
-                return deployer.deploy(WalletBalanceProvider, _lendingPoolAddressesProvider.address, { gas: 6721975, from: root });
+                return deployer.deploy(WalletBalanceProvider, _lendingPoolAddressesProvider.address, { gas: 6721975, from: root, overwrite: true});
             });
         });
     } else {
         // Perform a different step otherwise.
+        let _lendingPoolAddressesProvider;
+        deployer.then(function(){
+            return LendingPoolAddressesProvider.deployed()
+            .then(function(instance) {
+                _lendingPoolAddressesProvider = instance;
+            })
+            .then(function() {
+                return deployer.deploy(WalletBalanceProvider, _lendingPoolAddressesProvider.address, { gas: 6721975, from: root, overwrite: false});
+            });
+        });
     }
 };

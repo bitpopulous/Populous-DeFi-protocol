@@ -1,4 +1,4 @@
-//const HDWalletProvider = require('@truffle/hdwallet-provider');
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 
 // added for typescript
 // require("ts-node/register");
@@ -15,10 +15,10 @@ module.exports = {
      network_id: "*",
      gas: 6712390,
     },
-    /* ropsten: {
+    ropsten: {
       provider: function () {
         const secret = require("./secret.json");
-        return new HDWalletProvider(secret.mnemonic, `https://ropsten.infura.io/v3/${secret.infuraKey[1]}`, 1);
+        return new HDWalletProvider(secret.mnemonic, `https://ropsten.infura.io/v3/${secret.infuraKey[0]}`, 2);
       },
       network_id: 3,
       gas: 7721975,
@@ -34,7 +34,7 @@ module.exports = {
       gas: 6721975,
       skipDryRun: true,
       gasPrice: 75000000000,
-    }, */
+    },
   },
   mocha: {
     timeout: 1200000

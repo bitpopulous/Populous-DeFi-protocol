@@ -48,8 +48,10 @@ contract('PToken: Transfer', async ([deployer, ...users]) => {
   let getAddress, getLCAddress, getDPAddress, dp;
   let lro, fp, getFPAddress, getLROAddress, getCLinkAddress,
   getlmAddress,   getLPCAddress,  lpc, getLPLAddress,
-  _coreLibrary, pm, getPMAddress, getTKAddress, _tokenDistributorInstance, _lendingPoolLiquidationManager,
-  _DefaultReserveInterestRateStrategy, lendingPoolInstance, _poolConfigInstance;
+  _coreLibrary, pm, getPMAddress, getTKAddress, 
+  _tokenDistributorInstance, _lendingPoolLiquidationManager,
+  _DefaultReserveInterestRateStrategy, lendingPoolInstance, _poolConfigInstance,
+  _Core, _PDai_Address;
 
 
   before('Initializing test variables', async () => {
@@ -160,11 +162,14 @@ contract('PToken: Transfer', async ([deployer, ...users]) => {
     // get DAI/PDAI reserve data
     lendingPoolInstance = await LendingPool.at(getAddress); // targeting proxy
     let reserveData = await lendingPoolInstance.getReserveData(_DAI.address);
-    console.log(reserveData, "DAI reserve data");
-
+    //console.log(reserveData, "DAI reserve data");
+    
+    _Core = await LendingPoolCore.at(getLCAddress);
+    //console.log(await _Core.getReservePTokenAddress(_DAI.address), 'core address');
+    _PDai_Address = await _Core.getReservePTokenAddress(_DAI.address);
   });
 
-  it('User 0 deposits 500 DAI, transfers to user 1', async () => {
+  it('User 0 deposits 500 DAI, transfers generated 500 PDAI to user 1', async () => {
     await _DAI.mint(await convertToCurrencyDecimals(_DAI.address, 500), {
     //await _DAI.mint("500000000000000000000" , {
       from: users[0],
@@ -195,32 +200,31 @@ contract('PToken: Transfer', async ([deployer, ...users]) => {
       from: users[0],
     });
 
-    /*
-    //PTokenAddress = core.getReservePTokenAddress(_reserve);
-    await _PDai.transfer(users[1], amountDAItoDeposit, {from: users[0]})
+    
+    _PDai = await PToken.at(_PDai_Address);
+    await _PDai.transfer(users[1], amountDAItoDeposit, {from: users[0]});
+    
+    const fromBalance = await _PDai.balanceOf(users[0]);
+    const toBalance = await _PDai.balanceOf(users[1]);
 
-    const fromBalance = await _PDai.balanceOf(users[0])
-    const toBalance = await _PDai.balanceOf(users[1])
-
-    expect(fromBalance.toNumber()).to.be.equal(0, "Invalid from balance after transfer")
-    expect(toBalance.toNumber()).to.be.equal(amountDAItoDeposit, "Invalid to balance after transfer") */
-    //expect(fromBalance.toString()).to.be.equal("0", "Invalid from balance after transfer")
-    //expect(toBalance.toString()).to.be.equal(amountDAItoDeposit.toString(), "Invalid to balance after transfer")
+    expect(Number(fromBalance.toString())).to.be.equal(0, "Invalid from balance after transfer");
+    expect(Number(toBalance.toString())).to.be.equal(amountDAItoDeposit.toNumber(), "Invalid to balance after transfer");
+    //expect(fromBalance.toString()).to.be.equal("0", "Invalid from balance after transfer");
+    //expect(toBalance.toString()).to.be.equal(amountDAItoDeposit.toString(), "Invalid to balance after transfer");
   });
 
-/* 
-  it('User 1 redirects interest to user 2, transfers 500 DAI back to user 0', async () => {
+
+  it('User 1 redirects interest to user 2, transfers 250 PDAI back to user 0', async () => {
+
+    _PDai = await PToken.at(_PDai_Address);
 
     await _PDai.redirectInterestStream(users[2], {from: users[1]});
 
+    const PDaiRedirected = await convertToCurrencyDecimals(_DAI.address, 500);
+    const PDaitoTransfer = await convertToCurrencyDecimals(_DAI.address, 250);
 
-    const PDaiRedirected = await convertToCurrencyDecimals(_DAI.address, '1000');
-
-    const PDaitoTransfer = await convertToCurrencyDecimals(_DAI.address, '500');
-
-    
     const user2RedirectedBalanceBefore = await _PDai.getRedirectedBalance(users[2])
-    expect(user2RedirectedBalanceBefore.toString()).to.be.equal(PDaiRedirected, "Invalid redirected balance for user 2 before transfer")
+    expect(Number(user2RedirectedBalanceBefore.toString())).to.be.equal(PDaiRedirected.toNumber(), "Invalid redirected balance for user 2 before transfer")
 
     await _PDai.transfer(users[0], PDaitoTransfer, {from: users[1]})
 
@@ -228,15 +232,15 @@ contract('PToken: Transfer', async ([deployer, ...users]) => {
     const user2RedirectedBalanceAfter = await _PDai.getRedirectedBalance(users[2])
     const user1RedirectionAddress = await _PDai.getInterestRedirectionAddress(users[1])
 
-    expect(user2RedirectedBalanceAfter.toString()).to.be.equal(PDaitoTransfer, "Invalid redirected balance for user 2 after transfer")
+    expect(Number(user2RedirectedBalanceAfter.toString())).to.be.equal(PDaitoTransfer.toNumber(), "Invalid redirected balance for user 2 after transfer")
     expect(user1RedirectionAddress.toString()).to.be.equal(users[2], "Invalid redirection address for user 1")
 
   });
 
-  it('User 0 transfers back to user 1', async () => {
+  it('User 0 transfers 250 PDAI back to user 1', async () => {
 
 
-    const PDaitoTransfer = await convertToCurrencyDecimals(_DAI.address, '500');
+    const PDaitoTransfer = await convertToCurrencyDecimals(_DAI.address, 250);
 
 
     await _PDai.transfer(users[1], PDaitoTransfer, {from: users[0]})
@@ -246,34 +250,34 @@ contract('PToken: Transfer', async ([deployer, ...users]) => {
 
     const user1BalanceAfter = await _PDai.balanceOf(users[1])
 
-    expect(user2RedirectedBalanceAfter.toString()).to.be.equal(user1BalanceAfter.toString(), "Invalid redirected balance for user 2 after transfer")
+    expect(Number(user2RedirectedBalanceAfter.toString())).to.be.equal(Number(user1BalanceAfter.toString()), "Invalid redirected balance for user 2 after transfer");
 
   });
 
-
-  it('User 0 deposits 1 ETH and user tries to borrow, but the PTokens received as a transfer are not available as collateral (revert expected)', async () => {
-
-    await _lendingPoolInstance.deposit(ETHEREUM_ADDRESS, oneEther, '0', {
+/*
+   it('User 0 deposits 1 ETH and user tries to borrow, but the PTokens received as a transfer are not available as collateral (revert expected)', async () => {
+    let ETHEREUM_ADDRESS = "0x0";
+    await lendingPoolInstance.deposit(ETHEREUM_ADDRESS, web3.utils.toWei("1", "ether"), '0', {
       from: users[0],
-      value: oneEther.toFixed(0)
+      value: web3.utils.toWei("1", "ether")
+      //value: oneEther.toFixed(0)
     });
 
  
-    await expectRevert(_lendingPoolInstance.borrow(ETHEREUM_ADDRESS, await convertToCurrencyDecimals(ETHEREUM_ADDRESS,"0.1"), RATEMODE_STABLE, "0", {from: users[1]}), "The collateral balance is 0")
-
+    await expectRevert(lendingPoolInstance.borrow(ETHEREUM_ADDRESS, await convertToCurrencyDecimals(ETHEREUM_ADDRESS,"0.1"), RATEMODE_STABLE, "0", {from: users[1]}), "The collateral balance is 0")
   });
 
-  it('User 1 sets the DAI as collateral and borrows, tries to transfer everything back to user 0 (revert expected)', async () => {
 
-    await _lendingPoolInstance.setUserUseReserveAsCollateral(_DAI.address, true, {from: users[1]})
+   it('User 1 sets the DAI as collateral and borrows, tries to transfer everything back to user 0 (revert expected)', async () => {
 
-    const PDaitoTransfer = await convertToCurrencyDecimals(_DAI.address, '1000');
+    await lendingPoolInstance.setUserUseReserveAsCollateral(_DAI.address, true, {from: users[1]})
 
-    await _lendingPoolInstance.borrow(ETHEREUM_ADDRESS, await convertToCurrencyDecimals(ETHEREUM_ADDRESS,"0.1"), RATEMODE_STABLE, "0", {from: users[1]})
+    const PDaitoTransfer = await convertToCurrencyDecimals(_DAI.address, 500);
+
+    await lendingPoolInstance.borrow(ETHEREUM_ADDRESS, await convertToCurrencyDecimals(ETHEREUM_ADDRESS,"0.1"), RATEMODE_STABLE, "0", {from: users[1]})
 
     await expectRevert(_PDai.transfer(users[0], PDaitoTransfer, {from: users[1]}), "Transfer cannot be allowed.")
   });
-
  
   it('User 0 tries to transfer 0 balance (revert expected)', async () => {
     await expectRevert(_PDai.transfer(users[1], "0", {from: users[0]}), "Transferred amount needs to be greater than zero")

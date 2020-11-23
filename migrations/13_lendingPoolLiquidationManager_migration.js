@@ -7,9 +7,10 @@ module.exports = function (deployer, network, accounts) {
 
     if (network == "development") {
         // Do something specific to the network named "development".
-        deployer.deploy(LendingPoolLiquidationManager, { gas: 6721975, from: root });
+        deployer.deploy(LendingPoolLiquidationManager, { gas: 6721975, from: root, overwrite: true});
     } else {
         // Perform a different step otherwise.
+        deployer.deploy(LendingPoolLiquidationManager, { gas: 6721975, from: root, overwrite: false});
     }
 } ;
 

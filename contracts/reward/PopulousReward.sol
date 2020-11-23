@@ -22,10 +22,10 @@ pragma solidity ^0.5.0;
  * Populous XBRL Token reward contract author Populous World
  **/
 import "@openzeppelin/contracts/ownership/Ownable.sol";
-import "../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol";
-
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../lendingpool/LendingPoolCore.sol";
 
 import "../tokenization/PToken.sol";
@@ -49,8 +49,8 @@ contract PopulousReward is Ownable  {
         uint256 accTokenPerShare; // Accumulated Token per share, times 1e12. See below.
     }
 
-    // The Erc20 Token
-    RewardToken public rewardToken;
+    // The IERC20 Token
+    IERC20 public rewardToken;
     // Dev address.
     address public devaddr;
     // Block number when bonus Token period ends.
@@ -75,44 +75,42 @@ contract PopulousReward is Ownable  {
 
     event Deposit(address indexed user, address indexed _reserve, uint256 amount);
     event Withdraw(address indexed user,address indexed _reserve, uint256 amount);
-    event Withdrawrawrewardtoken(address indexed user,address indexed _reserve);
+    event Withdrawrawrewardtoken(address indexed user,address indexed _reserve, uint256 amount);
     event EmergencyWithdraw(address indexed user, address indexed _reserve, uint256 amount);
 
     constructor(
         LendingPoolCore _core,
-        RewardToken _rewardToken,
+        address _rewardToken,
         address _devaddr,
         uint256 _rewardTokenPerBlock,
         uint256 _startBlock,
         uint256 _bonusEndBlock
     ) public {
         core = _core;
-        rewardToken = _rewardToken;
+        rewardToken = IERC20(_rewardToken);
         devaddr = _devaddr;
         rewardTokenPerBlock = _rewardTokenPerBlock;
         bonusEndBlock = _bonusEndBlock;
         startBlock = _startBlock;
-    }
-    
+    }    
+
     function UpdatelendingPoolCore(LendingPoolCore _lendingPoolCore) public onlyOwner()
     {
         require(address(_lendingPoolCore) != address(0), "LendingPoolCore: new Core contract  is the zero address");
-        core=_lendingPoolCore;
+        core = _lendingPoolCore;
     }
     
     // Add a new PToken to the pool. Can only be called by the owner.
     // XXX DO NOT add the same A token more than once. Rewards will be messed up if you do.
     function add(uint256 _allocPoint, address _reserve) public onlyOwner {
-        
         PToken PToken = PToken(core.getReservePTokenAddress(_reserve));
         uint256 lastRewardBlock = block.number > startBlock ? block.number : startBlock;
         totalAllocPoint = totalAllocPoint.add(_allocPoint);
-        
         PoolInfo storage pool = poolInfo[_reserve];
-        pool.PToken=PToken;
-        pool.allocPoint= _allocPoint;
-        pool.lastRewardBlock= lastRewardBlock;
-        pool.accTokenPerShare= 0;
+        pool.PToken = PToken;
+        pool.allocPoint = _allocPoint;
+        pool.lastRewardBlock = lastRewardBlock;
+        pool.accTokenPerShare = 0;
     }
 
     // Update the given pool's Token allocation point. Can only be called by the owner.
@@ -157,7 +155,7 @@ contract PopulousReward is Ownable  {
         PoolInfo storage pool = poolInfo[_reserve];
         UserInfo storage user = userInfo[_reserve][_user];
         uint256 accTokenPerShare = pool.accTokenPerShare;
-        uint256 PTokenSupply = pool.PToken.balanceOf(msg.sender);
+        uint256 PTokenSupply = pool.PToken.balanceOf(address(this));
         if (block.number > pool.lastRewardBlock && PTokenSupply != 0) {
             uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
             uint256 rewardTokenReward = multiplier.mul(rewardTokenPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
@@ -191,12 +189,13 @@ contract PopulousReward is Ownable  {
         
         uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
         uint256 rewardTokenReward = multiplier.mul(rewardTokenPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
-        rewardToken.mint(devaddr, rewardTokenReward.div(10));
-        rewardToken.mint(address(this), rewardTokenReward);
+        //rewardToken.safeTransfer(devaddr, rewardTokenReward.div(10));
+        //rewardToken.safeTransfer(address(this), rewardTokenReward);
+        //check 1e12
         pool.accTokenPerShare = pool.accTokenPerShare.add(rewardTokenReward.mul(1e12).div(lpSupply));
         pool.lastRewardBlock = block.number;
     }
-
+        
     // Deposit LP tokens to MasterChef for rewardToken allocation.
     function deposit(address _reserve, uint256 _amount) public {
         PoolInfo storage pool = poolInfo[_reserve];
@@ -206,25 +205,37 @@ contract PopulousReward is Ownable  {
             uint256 pending = user.amount.mul(pool.accTokenPerShare).div(1e12).sub(user.rewardDebt);
             saferewardTokenTransfer(msg.sender, pending);
         }
-        //pool.PToken.safeTransferFrom(address(msg.sender), address(this), _amount);
-        user.amount = user.amount.add(_amount);
+
+        if (_amount > 0) {
+            pool.PToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+            user.amount = user.amount.add(_amount);
+        }
+        
         user.rewardDebt = user.amount.mul(pool.accTokenPerShare).div(1e12);
         emit Deposit(msg.sender, _reserve, _amount);
     }
 
-    // Withdraw LP tokens from MasterChef.
+    // Withdraw LP tokens from the Populous Reward contract.
     function withdraw(address _reserve, uint256 _amount) public {
         PoolInfo storage pool = poolInfo[_reserve];
         UserInfo storage user = userInfo[_reserve][msg.sender];
-        //require(user.amount >= _amount, "withdraw: not good");
+        require(user.amount >= _amount, "withdraw: not allowed because user amount is below amount specified");
         updatePool(_reserve);
+        //user gets reward tokens minus their reward debt
         uint256 pending = user.amount.mul(pool.accTokenPerShare).div(1e12).sub(user.rewardDebt);
-        saferewardTokenTransfer(msg.sender, pending);
-        user.amount = user.amount.sub(_amount);
-        user.rewardDebt = user.amount.mul(pool.accTokenPerShare).div(1e12);
-        //pool.PToken.safeTransfer(address(msg.sender), _amount);
+        if(pending > 0) {
+            saferewardTokenTransfer(msg.sender, pending);
+        }
+
+        //users lending pool token amount
+        if(_amount > 0) {
+            user.amount = user.amount.sub(_amount);
+            pool.PToken.safeTransfer(address(msg.sender), _amount);
+        }
+        user.rewardDebt = user.amount.mul(pool.accTokenPerShare).div(1e12); 
         emit Withdraw(msg.sender, _reserve, _amount);
     }
+
     
     // Withdraw only reward token
     function withdrawrewardtoken(address _reserve) public {
@@ -232,39 +243,42 @@ contract PopulousReward is Ownable  {
         UserInfo storage user = userInfo[_reserve][msg.sender];
         updatePool(_reserve);
         uint256 pending = user.amount.mul(pool.accTokenPerShare).div(1e12).sub(user.rewardDebt);
-        saferewardTokenTransfer(msg.sender, pending);
-        
-        emit Withdrawrawrewardtoken(msg.sender, _reserve);
+        if(pending > 0) {
+            saferewardTokenTransfer(msg.sender, pending);
+        }
+        //check update reward debt
+        emit Withdrawrawrewardtoken(msg.sender, _reserve, pending);
     }
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
     function emergencyWithdraw(address _reserve) public {
-        //PoolInfo storage pool = poolInfo[_reserve];
+        PoolInfo storage pool = poolInfo[_reserve];
         UserInfo storage user = userInfo[_reserve][msg.sender];
-        //pool.PToken.safeTransfer(address(msg.sender), user.amount);
-        emit EmergencyWithdraw(msg.sender, _reserve, user.amount);
+        uint256 amount = user.amount;
+        //set user amount and debt to 0
         user.amount = 0;
         user.rewardDebt = 0;
+        pool.PToken.safeTransfer(address(msg.sender), amount);
+        emit EmergencyWithdraw(msg.sender, _reserve, user.amount);
     }
 
     // Safe rewardToken transfer function, just in case if rounding error causes pool to not have enough rewardTokens.
     function saferewardTokenTransfer(address _to, uint256 _amount) internal {
         uint256 rewardTokenBal = rewardToken.balanceOf(address(this));
         if (_amount > rewardTokenBal) {
-            rewardToken.transfer(_to, rewardTokenBal);
+            rewardToken.safeTransfer(_to, rewardTokenBal);
         } else {
-            rewardToken.transfer(_to, _amount);
+            rewardToken.safeTransfer(_to, _amount);
         }
+    }
+
+    // Update dev address by the previous dev.
+    function dev(address _devaddr) public {
+        require(msg.sender == devaddr, "dev is not message sender!");
+        devaddr = _devaddr;
     }
 }
 
-contract RewardToken is ERC20, Ownable {
-    /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).
-    function mint(address _to, uint256 _amount) public onlyOwner {
-        _mint(_to, _amount);
-    }
-}
-    
 interface IMigratorToken {
     // Perform LP token migration from legacy UniswapV2 to rewardTokenSwap.
     // Take the current LP token address and return the new LP token address.

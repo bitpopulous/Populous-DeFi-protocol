@@ -13,10 +13,13 @@ module.exports = function(deployer, network, accounts) {
     if (network == "development") {
         // Do something specific to the network named "development".
         // Deploy library CoreLibrary, then link CoreLibrary to contract LendingPoolCore, then deploy LendingPoolCore.
-        deployer.deploy(CoreLibrary, {gas: 6721975, from: root});
+        deployer.deploy(CoreLibrary, {gas: 6721975, from: root, overwrite: true});
         deployer.link(CoreLibrary, LendingPoolCore);
-        deployer.deploy(LendingPoolCore, {gas: 6721975, from: root});
+        deployer.deploy(LendingPoolCore, {gas: 6721975, from: root, overwrite: true});
     } else {
         // Perform a different step otherwise.
+        deployer.deploy(CoreLibrary, {gas: 6721975, from: root, overwrite: false});
+        deployer.link(CoreLibrary, LendingPoolCore);
+        deployer.deploy(LendingPoolCore, {gas: 6721975, from: root, overwrite: false});
     }
 };
