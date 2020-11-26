@@ -47,6 +47,12 @@ Starting migrations...
 > Network id:      3
 > Block gas limit: 8000029
 
+ChainlinkProxyPriceProvider address - 0xA26BBe6700484bF5e3dcC5A9E0d5c484c2bBffD4
+PriceOracle address - 0x4085A4cdFe648258DdB59d38655C07c919bA6CD7
+asset price for DAI - truffle(ropsten)> await chainLinkInstance.getAssetPrice("0xE5cc501BaD49f4897EC6BFd1f1A4464b8D3C264f")
+<BN: de0b6b3a7640000>
+de0b6b3a7640000 = 1000000000000000000 (1 ETH)
+
 
 1_initial_migration.js
 ======================
