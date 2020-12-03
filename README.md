@@ -29,13 +29,14 @@ PXT is the reward token of the Populous DeFi platform. The token is distributed 
 
 ## Governance Tokens
 
-PXT is the governance token for the PopDeFi. Wth PXT you are able to participate in voting on key aspects of the PopDeFi such as rates and new strategies which will come into play. PXT also can command income driven from internal fees generated on both the PopDeFi and PIP. PXT can also be state on the PopEx in return for ETH generated from the Populous mining operations.
+PPT is the governance token for the PopDeFi. Wth PPT you are able to participate in voting on key aspects of the PopDeFi such as rates and new strategies which will come into play. PPT also can command income driven from internal fees generated on both the PopDeFi and PIP. PPT can also be state on the PopEx in return for ETH generated from the Populous mining operations.
 
-## Lending and borrowing
-Deposit and provide liquidity to the market to earn a passive income. Borrowers are able to borrow at a LTV rate of between 50% to 75% of crypto assets owned.
+## Lending and borrowing -- pending
 
 
-## Ropsten Test Network deployment with automated smart contract configurations - 18/11/2020
+
+
+## Ethereum (ropsten) test network deployment for Populous DeFi lending pool and reward smart contracts with automated migrations in specified order - 18/11/2020
 
 ```
 infura key/address used - https://ropsten.infura.io/v3/${secret.infuraKey[0]}`, 2
@@ -46,12 +47,6 @@ Starting migrations...
 > Network name:    'ropsten'
 > Network id:      3
 > Block gas limit: 8000029
-
-ChainlinkProxyPriceProvider address - 0xA26BBe6700484bF5e3dcC5A9E0d5c484c2bBffD4
-PriceOracle address - 0x4085A4cdFe648258DdB59d38655C07c919bA6CD7
-asset price for DAI - truffle(ropsten)> await chainLinkInstance.getAssetPrice("0xE5cc501BaD49f4897EC6BFd1f1A4464b8D3C264f")
-<BN: de0b6b3a7640000>
-de0b6b3a7640000 = 1000000000000000000 (1 ETH)
 
 
 1_initial_migration.js
@@ -310,8 +305,8 @@ de0b6b3a7640000 = 1000000000000000000 (1 ETH)
 
 19_contract_configurations_migration.js
 =======================================
-0xE5cc501BaD49f4897EC6BFd1f1A4464b8D3C264f DAI address for lending pool
-0xbeD9521335Db8604D7406323dCbe775396db0baE PDAI address for lending pool and Populous Reward
+0xE5cc501BaD49f4897EC6BFd1f1A4464b8D3C264f DAI token address for lending pool
+0xbeD9521335Db8604D7406323dCbe775396db0baE PDAI token address for lending pool and Populous Reward
    -------------------------------------
    > Total cost:                   0 ETH
 
@@ -341,6 +336,36 @@ Summary
 =======
 > Total deployments:   2
 > Final cost:          0.044966702 ETH
+
+
+
+ChainlinkProxyPriceProvider address - 0xA26BBe6700484bF5e3dcC5A9E0d5c484c2bBffD4
+SetPriceOracle in LendingPoolAddressesProvider TX - https://ropsten.etherscan.io/tx/0x72d756572230adc961a12effeb6ca998f35d9619f015d32010c7e516deca1cd7
+PriceOracle address - 0x4085A4cdFe648258DdB59d38655C07c919bA6CD7
+asset price for DAI - truffle(ropsten)> await chainLinkInstance.getAssetPrice("0xE5cc501BaD49f4897EC6BFd1f1A4464b8D3C264f")
+<BN: de0b6b3a7640000>
+de0b6b3a7640000 = 1000000000000000000 (1 ETH)
+
+LendingPool upgrade
+lpV2 address: 0xf68459085cb11Dfb197278f235eC3969d1606B43
+lpV3 address: 0x4bED3413455F653cB8Ec62c5089A7ed2A5695EDA
+
+lending pool (proxy) address - 0x65b8F9EC549400275b647667fa8e0864Bd412cA2
+lending pool addresses provider - 0xE4C62301abD7cEDC98Dc0fA37DFefA5813A64c10
+
+NEW RESERVE
+tusd token address - 0xD35e9aaC33BeE9c35504C49Aacb1f3197521c6BB - decimals 18
+truffle(ropsten)> await _poolConfigInstance.initReserve(tusd.address, '18', '0x9F67a019218A3b1A37EcA42135C3E492A96F7D57')
+await _poolConfigInstance.refreshLendingPoolCoreConfiguration()
+pr = await IPriceOracle.at('0x4085A4cdFe648258DdB59d38655C07c919bA6CD7')
+await pr.setAssetPrice('0xD35e9aaC33BeE9c35504C49Aacb1f3197521c6BB', '1000000000000000000')
+chainLinkInstance = await ChainlinkProxyPriceProvider.at('0xA26BBe6700484bF5e3dcC5A9E0d5c484c2bBffD4')
+truffle(ropsten)> await chainLinkInstance.getAssetPrice(tusd.address)
+<BN: de0b6b3a7640000>
+await tusd.transfer('0x2dDcDa68A63aBAe2E0a7722A22D3F5472E9dB10c', '1000000000000000000000000000')
+truffle(ropsten)> await _poolConfigInstance.enableBorrowingOnReserve(tusd.address, true)
+tx:
+   '0x403c2dbf4776bcb9be8b2922ef91c2eb4351807d53dce718daaacbb11a92e96d',
 ```
 
 
@@ -452,4 +477,32 @@ Summary
 =======
 > Total deployments:   5
 > Final cost:          0.104250306 ETH
+
+```
+
+
+
+## Ethereum (ropsten) test network deployment for Testnet Tokens Faucet - 02/12/2020
+```
+infura key/address used - https://ropsten.infura.io/v3/${secret.infuraKey[0]}`, 2
+0xC6561dF9180a8863fA9a16aB376eFbca17166CF4
+
+
+truffle(ropsten)> dai = await MockDAI.at('0xE5cc501BaD49f4897EC6BFd1f1A4464b8D3C264f')
+truffle(ropsten)> usdc = await MockUSDC.at('0xB1B0dd29beB78692F98f6068e81010d65Cc62D17')
+truffle(ropsten)> tusd = await MockTUSD.at('0xD35e9aaC33BeE9c35504C49Aacb1f3197521c6BB')
+truffle(ropsten)> faucet.address
+'0xe08cCA1A3fB06365Cd71E5d995c5c2b8E2D64521'
+
+truffle(ropsten)> await faucet.setDAIAddress(dai.address)
+{ tx:
+   '0x6042436cbb55fa9591d9c11cc46bac5204b82237ec166d2f4ae025bcc4f3675f',
+
+truffle(ropsten)> await faucet.setTUSDAddress(tusd.address)
+{ tx:
+   '0x2b86eba095717093adc0b2b4bf405b68d4a62231621dc17ac83e4fcfc6d23dc2',
+
+truffle(ropsten)> await faucet.setUSDCAddres(usdc.address)
+{ tx:
+'0x76e830e71cd442e3ec638d90c3c88712088b6576f51030b3791f05d5d206a0a7',
 ```
