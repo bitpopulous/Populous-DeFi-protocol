@@ -1401,7 +1401,7 @@ gbp reserve enabled for borrowing
 
 
 
-## Ethereum live network deployment for Populous DeFi governance smart contracts with automated migration scripts in required order - 10/01/2021
+## Ethereum live network deployment for Populous DeFi smart contracts with automated migration scripts in required order - 10/01/2021
 
 ```
 
