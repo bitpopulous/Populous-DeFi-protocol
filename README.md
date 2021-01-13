@@ -1846,10 +1846,14 @@ finished setting token/asset prices/exchange rates in ETH
 0xdac17f958d2ee523a2206206994597c13d831ec7 USDT reserve address for lending pool
 0x0000000000085d4780B73119b644AE5ecd22b376 TUSD reserve address for lending pool
 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 USDC reserve address for lending pool
+0x2260fac5e5542a773aa44fbcfedf7c193bc2c599 WBTC reserve address for lending pool
+0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE ETHEREUM reserve address for lending pool
 0xEe755Af8eF359690078418f911e55747Cb748178 PDAI address for lending pool and Populous Reward
 0x532B953f04a11446206E8808b1FD373AD18e1101 PTUSD address for lending pool and Populous Reward
 0xAb6c406DFc3ABd5915b46cEc6069C7a70b443286 PUSDC address for lending pool and Populous Reward
 0xCECc027c84234616668306b0412aeCABb7943bAD PUSDT address for lending pool and Populous reward
+0xA0dD7347fF83f9aECE47f319AC2b144d0E670394 PWBTC address for lending pool and Populous reward
+0x67c7ac1EB96024Fd293B2e11c4Fae37F6D60466d PETH address for lending pool and Populous reward
 
    > Saving migration to chain.
    > Saving artifacts
@@ -1866,23 +1870,8 @@ finished setting token/asset prices/exchange rates in ETH
 0x818f57194c6e54213E3AF786d4E763ef89EF7829 USDC reward pool
 0x676AC3E2E53a2d010AB66A2Ab5aF7E0ee5a4FC00 USDT reward pool 
 0x08944Ce6c5d0ae48BC4A37435aC31C7EDd1B801B TUSD reward pool
-
-truffle(live)> dai.notifyRewardAmount("300000"+"00000000")
-{ tx:
-   '0xe5373331d7af7ce2ea831a82b8ef4f490f59fd8b5e56e09624f6f2d280e8fcfa',
-
-truffle(live)> usdc.notifyRewardAmount("300000"+"00000000")
-{ tx:
-   '0x0d93830587d2d075e601dbea662f22f91fb68b2703967893b1f084547685debf',
-
-truffle(live)> usdt.notifyRewardAmount("300000"+"00000000")
-{ tx:
-   '0x7f2db701b0956956b68b6a95afeda573a6496d315191790b2e4844e8e324550a',
-
-truffle(live)> tusd.notifyRewardAmount("300000"+"00000000")
-{ tx:
-   '0xcf256a1ed0ab025168067934c284e8362e258200a4a9e8deab962579d207ab93',
-
+0x300438e1Bad50CBcC3aD38aDE8eD02E7D620C807 WBTC reward pool
+0x94981e73aD1452cf9C6589c910b9Cb42E1280dA3 ETH reward pool
 
 
    > Saving migration to chain.
